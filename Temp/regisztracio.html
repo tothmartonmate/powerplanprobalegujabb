@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Power Plan - Regisztráció</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+  <!-- Navigáció -->
+  <nav>
+    <div class="logo">Power<span>Plan</span></div>
+    <ul class="nav-left">
+      <li><a href="index.html">KEZDŐLAP</a></li>
+      <li><a href="bejelentkezes.html">BEJELENTKEZÉS</a></li>
+      <li><a href="index.html#services">SZOLGÁLTATÁSAINK</a></li>
+    </ul>
+    <ul class="nav-right">
+      <li><a href="index.html#about">RÓLUNK</a></li>
+      <li><a href="index.html#pricing">ÁRAK</a></li>
+      <li><a href="index.html#contact">KAPCSOLAT</a></li>
+    </ul>
+  </nav>
+
+  <!-- Regisztrációs űrlap -->
+  <div class="form-container">
+    <div class="form-box">
+      <h2>Regisztráció</h2>
+      <p>Hozz létre egy fiókot, és kezdd el az edzést!</p>
+      
+      <form id="registerForm">
+        <div class="form-row">
+          <div class="form-group">
+            <label for="firstName">Keresztnév</label>
+            <div class="input-with-icon">
+              <i class="fas fa-user"></i>
+              <input type="text" id="firstName" placeholder="Keresztnév" required>
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <label for="lastName">Vezetéknév</label>
+            <div class="input-with-icon">
+              <i class="fas fa-user"></i>
+              <input type="text" id="lastName" placeholder="Vezetéknév" required>
+            </div>
+          </div>
+        </div>
+        
+        <div class="form-group">
+          <label for="email">Email cím</label>
+          <div class="input-with-icon">
+            <i class="fas fa-envelope"></i>
+            <input type="email" id="email" placeholder="email.cim@pelda.hu" required>
+          </div>
+        </div>
+        
+        <div class="form-group">
+          <label for="password">Jelszó</label>
+          <div class="input-with-icon">
+            <i class="fas fa-lock"></i>
+            <input type="password" id="password" placeholder="Válassz erős jelszót" required>
+          </div>
+        </div>
+        
+        <div class="form-group">
+          <label for="confirmPassword">Jelszó megerősítése</label>
+          <div class="input-with-icon">
+            <i class="fas fa-lock"></i>
+            <input type="password" id="confirmPassword" placeholder="Ismételd meg a jelszót" required>
+          </div>
+        </div>
+        
+        <div class="form-group">
+          <label for="fitnessGoal">Fitness cél</label>
+          <select id="fitnessGoal" required>
+            <option value="" disabled selected>Válaszd ki a célodat</option>
+            <option value="weight-loss">Fogyás</option>
+            <option value="muscle-gain">Izomépítés</option>
+            <option value="endurance">Stamina növelés</option>
+            <option value="general-fitness">Általános fitness</option>
+            <option value="competition">Versenyre készülés</option>
+          </select>
+        </div>
+        
+        <div class="terms">
+          <input type="checkbox" id="terms" required>
+          <label for="terms">Elfogadom a <a href="#">Felhasználási feltételeket</a> és az <a href="#">Adatvédelmi szabályzatot</a></label>
+        </div>
+        
+        <button type="submit" class="submit-button">REGISZTRÁCIÓ</button>
+      </form>
+      
+      <div class="divider">
+        <span>VAGY</span>
+      </div>
+      
+      <div class="social-login">
+        <button class="social-button facebook">
+          <i class="fab fa-facebook-f"></i>
+        </button>
+        <button class="social-button google">
+          <i class="fab fa-google"></i>
+        </button>
+        <button class="social-button apple">
+          <i class="fab fa-apple"></i>
+        </button>
+      </div>
+      
+      <div class="form-footer">
+        Már van fiókod? <a href="bejelentkezes.html">Jelentkezz be!</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Lábléc -->
+  <footer>
+    <div class="footer-content">
+      <div class="footer-column">
+        <h3>Power Plan</h3>
+        <p>Edzőtermi alkalmazás, amely segít elérni fitness céljaidat. Éld át a változást velünk!</p>
+      </div>
+      <div class="footer-column">
+        <h3>Gyors linkek</h3>
+        <ul class="footer-links">
+          <li><a href="index.html">Kezdőlap</a></li>
+          <li><a href="index.html#services">Szolgáltatások</a></li>
+          <li><a href="index.html#about">Rólunk</a></li>
+          <li><a href="index.html#pricing">Árak</a></li>
+          <li><a href="index.html#contact">Kapcsolat</a></li>
+        </ul>
+      </div>
+      <div class="footer-column">
+        <h3>Kövess minket</h3>
+        <div class="social-icons">
+          <a href="#"><i class="fab fa-facebook-f"></i></a>
+          <a href="#"><i class="fab fa-instagram"></i></a>
+          <a href="#"><i class="fab fa-youtube"></i></a>
+          <a href="#"><i class="fab fa-tiktok"></i></a>
+        </div>
+      </div>
+    </div>
+    <div class="copyright">
+      <p>&copy; 2023 Power Plan Edzőtermi Alkalmazás. Minden jog fenntartva.</p>
+    </div>
+  </footer>
+
+  <script>
+    // Egyszerű űrlapkezelés
+    document.getElementById('registerForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      
+      const password = document.getElementById('password').value;
+      const confirmPassword = document.getElementById('confirmPassword').value;
+      
+      // Jelszó egyezés ellenőrzése
+      if (password !== confirmPassword) {
+        alert('A jelszavak nem egyeznek!');
+        return;
+      }
+      
+      // Regisztráció adatok összegyűjtése
+      const formData = {
+        firstName: document.getElementById('firstName').value,
+        lastName: document.getElementById('lastName').value,
+        email: document.getElementById('email').value,
+        fitnessGoal: document.getElementById('fitnessGoal').value
+      };
+      
+      console.log('Regisztrációs adatok:', formData);
+      
+      // Sikeres regisztráció szimulálása
+      alert('Sikeres regisztráció! Most már bejelentkezhetsz.');
+      window.location.href = 'bejelentkezes.html';
+    });
+  </script>
+</body>
+</html>

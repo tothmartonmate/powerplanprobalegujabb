@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Power Plan - Edzőtermi Alkalmazás</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+</head>
+<body>
+  <!-- Navigáció -->
+  <nav>
+    <div class="logo" onclick="window.location.href='index.html'">
+      <i class="fas fa-dumbbell"></i> Power<span>Plan</span>
+    </div>
+    <ul class="nav-left">
+      <li><a href="regisztracio.html">REGISZTRÁCIÓ</a></li>
+      <li><a href="bejelentkezes.html">BEJELENTKEZÉS</a></li>
+      <li><a href="#services">SZOLGÁLTATÁSAINK</a></li>
+    </ul>
+    <ul class="nav-right">
+      <li><a href="#about">RÓLUNK</a></li>
+      <li><a href="#pricing">ÁRAK</a></li>
+      <li><a href="#contact">KAPCSOLAT</a></li>
+    </ul>
+  </nav>
+
+  <!-- Hero szekció -->
+  <section class="hero">
+    <div class="hero-content">
+      <h1>Éld át a változást!</h1>
+      <p>A Power Plan edzőtermi alkalmazás segít elérni edzés céljaidat. Kövesd fejlődésedet, kapj személyre szabott edzés-terveket és társulj közösségünkhöz!</p>
+      <div class="cta-buttons">
+        <a href="regisztracio.html" class="cta-button">INGYENES REGISZTRÁCIÓ</a>
+        <button class="cta-button secondary" onclick="showDemoModal()">DEMÓ MEGTEKINTÉSE</button>
+      </div>
+    </div>
+    <div class="hero-image">
+      <img src="https://images.unsplash.com/photo-1534438327276-14e5300c3a48?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1170&q=80" alt="Edzőtermi alkalmazás">
+    </div>
+  </section>
+
+  <!-- Szolgáltatások -->
+  <section class="services" id="services">
+    <div class="section-title">
+      <h2>Szolgáltatásaink</h2>
+      <p>Fedezd fel, hogyan segíthetünk elérni fitness céljaidat</p>
+    </div>
+    <div class="services-grid">
+      <div class="service-card">
+        <div class="service-icon">
+          <i class="fas fa-dumbbell"></i>
+        </div>
+        <h3>Személyre szabott edzéstervek</h3>
+        <p>Edzéstervek, amelyek testtípusodhoz, céljaidhoz és időbeosztásodhoz igazodnak.</p>
+      </div>
+      <div class="service-card">
+        <div class="service-icon">
+          <i class="fas fa-chart-line"></i>
+        </div>
+        <h3>Teljesítménykövetés</h3>
+        <p>Részletes statisztikákkal követheted fejlődésedet és motivált maradhatsz.</p>
+      </div>
+      <div class="service-card">
+        <div class="service-icon">
+          <i class="fas fa-utensils"></i>
+        </div>
+        <h3>Étrend-tervezés</h3>
+        <p>Optimális táplálkozási tanácsok és étrend-tervek, amelyek támogatják edzéseid.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Rólunk -->
+  <section class="about" id="about">
+    <div class="about-content">
+      <div class="about-text">
+        <h2>Rólunk</h2>
+        <p>A Power Plan egy innovatív edzőtermi alkalmazás, amely 2020 óta segít embereknek elérni fitness céljaikat. Célunk, hogy mindenki számára elérhetővé tegyük a személyre szabott edzésélményt.</p>
+        <p>Csapatunk tapasztalt edzőkből, táplálkozási szakértőkből és szoftverfejlesztőkből áll, akik együtt dolgoznak azon, hogy a legjobb digitális fitness megoldást nyújthassuk.</p>
+        <p>Hiszünk abban, hogy a technológia és a fitness tökéletes kombinációja révén mindenki képes pozitív változásokat elérni az életében.</p>
+      </div>
+      <div class="about-image">
+        <img src="https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1170&q=80" alt="Edzőtermi alkalmazás csapat">
+      </div>
+    </div>
+  </section>
+
+  <!-- Áraink -->
+  <section class="pricing" id="pricing">
+    <div class="section-title">
+      <h2>Áraink</h2>
+      <p>Válaszd ki a számodra legmegfelelőbb csomagot</p>
+    </div>
+    <div class="pricing-grid">
+      <div class="pricing-card">
+        <div class="pricing-icon">
+          <i class="fas fa-user"></i>
+        </div>
+        <h3>Alap</h3>
+        <div class="price">4.990 Ft<span>/hó</span></div>
+        <ul class="pricing-features">
+          <li><i class="fas fa-check"></i> Korlátlan edzésnapló</li>
+          <li><i class="fas fa-check"></i> Alap statisztikák</li>
+          <li><i class="fas fa-check"></i> 3 előre megírt edzésprogram</li>
+          <li><i class="fas fa-times"></i> Személyre szabott edzéstervek</li>
+          <li><i class="fas fa-times"></i> Étrend-tervezés</li>
+        </ul>
+        <button class="cta-button" onclick="selectPlan('basic')">KIVÁLASZTÁS</button>
+      </div>
+      <div class="pricing-card featured">
+        <div class="pricing-icon">
+          <i class="fas fa-user-friends"></i>
+        </div>
+        <h3>Prémium</h3>
+        <div class="price">8.990 Ft<span>/hó</span></div>
+        <ul class="pricing-features">
+          <li><i class="fas fa-check"></i> Minden az Alap csomagból</li>
+          <li><i class="fas fa-check"></i> Személyre szabott edzéstervek</li>
+          <li><i class="fas fa-check"></i> Részletes teljesítményelemzés</li>
+          <li><i class="fas fa-check"></i> Korlátlan edzésprogram</li>
+          <li><i class="fas fa-check"></i> Alap étrend-tervezés</li>
+        </ul>
+        <button class="cta-button" onclick="selectPlan('premium')">KIVÁLASZTÁS</button>
+      </div>
+      <div class="pricing-card">
+        <div class="pricing-icon">
+          <i class="fas fa-crown"></i>
+        </div>
+        <h3>Pro</h3>
+        <div class="price">12.990 Ft<span>/hó</span></div>
+        <ul class="pricing-features">
+          <li><i class="fas fa-check"></i> Minden a Prémium csomagból</li>
+          <li><i class="fas fa-check"></i> Részletes étrend-tervezés</li>
+          <li><i class="fas fa-check"></i> Heti egyéni edzői konzultáció</li>
+          <li><i class="fas fa-check"></i> Haladó teljesítménykövetés</li>
+          <li><i class="fas fa-check"></i> Prioritás ügyfélszolgálat</li>
+        </ul>
+        <button class="cta-button" onclick="selectPlan('pro')">KIVÁLASZTÁS</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Kapcsolat -->
+  <section class="contact" id="contact">
+    <div class="section-title">
+      <h2>Kapcsolat</h2>
+      <p>Vegye fel velünk a kapcsolatot, szívesen válaszolunk kérdéseire</p>
+    </div>
+    <div class="contact-container">
+      <div class="contact-info">
+        <h3>Elérhetőségeink</h3>
+        <div class="contact-details">
+          <div class="contact-detail">
+            <i class="fas fa-map-marker-alt"></i>
+            <p>1234 Budapest, Fitness utca 7.</p>
+          </div>
+          <div class="contact-detail">
+            <i class="fas fa-phone"></i>
+            <p>+36 1 234 5678</p>
+          </div>
+          <div class="contact-detail">
+            <i class="fas fa-envelope"></i>
+            <p>info@powerplan.hu</p>
+          </div>
+          <div class="contact-detail">
+            <i class="fas fa-clock"></i>
+            <p>Hétfő - Péntek: 8:00 - 20:00</p>
+          </div>
+        </div>
+        <div class="social-icons">
+          <a href="#"><i class="fab fa-facebook-f"></i></a>
+          <a href="#"><i class="fab fa-instagram"></i></a>
+          <a href="#"><i class="fab fa-youtube"></i></a>
+          <a href="#"><i class="fab fa-tiktok"></i></a>
+        </div>
+      </div>
+      <div class="contact-form">
+        <form id="contactForm">
+          <div class="form-group">
+            <label for="name">Név</label>
+            <input type="text" id="name" required>
+          </div>
+          <div class="form-group">
+            <label for="email">Email</label>
+            <input type="email" id="email" required>
+          </div>
+          <div class="form-group">
+            <label for="subject">Tárgy</label>
+            <input type="text" id="subject" required>
+          </div>
+          <div class="form-group">
+            <label for="message">Üzenet</label>
+            <textarea id="message" required></textarea>
+          </div>
+          <button type="submit" class="submit-button">ÜZENET KÜLDÉSE</button>
+        </form>
+      </div>
+    </div>
+  </section>
+
+  <!-- Lábléc -->
+  <footer>
+    <div class="footer-content">
+      <div class="footer-column">
+        <h3>Power Plan</h3>
+        <p>Edzőtermi alkalmazás, amely segít elérni fitness céljaidat. Éld át a változást velünk!</p>
+      </div>
+      <div class="footer-column">
+        <h3>Gyors linkek</h3>
+        <ul class="footer-links">
+          <li><a href="index.html">Kezdőlap</a></li>
+          <li><a href="#services">Szolgáltatások</a></li>
+          <li><a href="#about">Rólunk</a></li>
+          <li><a href="#pricing">Árak</a></li>
+          <li><a href="#contact">Kapcsolat</a></li>
+        </ul>
+      </div>
+      <div class="footer-column">
+        <h3>Szolgáltatások</h3>
+        <ul class="footer-links">
+          <li><a href="#services">Edzéstervek</a></li>
+          <li><a href="#services">Teljesítménykövetés</a></li>
+          <li><a href="#services">Étrend-tervezés</a></li>
+          <li><a href="#services">Edzői konzultáció</a></li>
+        </ul>
+      </div>
+      <div class="footer-column">
+        <h3>Hírek</h3>
+        <p>Iratkozz fel hírlevelünkre, hogy értesülj legújabb funkcióinkról és akcióinkról.</p>
+        <div class="form-group">
+          <input type="email" placeholder="Email címed" style="margin-top: 10px;">
+          <button class="submit-button" style="margin-top: 10px; width: 100%;">FELIRATKOZÁS</button>
+        </div>
+      </div>
+    </div>
+    <div class="copyright">
+      <p>&copy; 2023 Power Plan Edzőtermi Alkalmazás. Minden jog fenntartva.</p>
+    </div>
+  </footer>
+
+  <!-- Demo Modal -->
+  <div class="modal" id="demoModal">
+    <div class="modal-content">
+      <h3>DEMÓ VÉGREHAJTÁS</h3>
+      <p>Szeretné kipróbálni a PowerPlan alkalmazást anélkül, hogy regisztrálna?</p>
+      <p>A demó verzióval az összes funkciót tesztelheti, de az adatait nem mentjük el.</p>
+      <div class="modal-buttons">
+        <button class="cta-button" onclick="startDemo()">DEMÓ INDÍTÁSA</button>
+        <button class="cta-button secondary" onclick="closeModal()">MÉGSE</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Plan Selection Modal -->
+  <div class="modal" id="planModal">
+    <div class="modal-content">
+      <h3 id="planTitle">CSOMAG KIVÁLASZTÁSA</h3>
+      <p id="planDescription"></p>
+      <div class="modal-buttons">
+        <button class="cta-button" onclick="proceedToRegistration()">Tovább a regisztrációhoz</button>
+        <button class="cta-button secondary" onclick="closeModal()">Mégse</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Modal kezelés
+    function showDemoModal() {
+      document.getElementById('demoModal').classList.add('active');
+    }
+
+    function closeModal() {
+      document.getElementById('demoModal').classList.remove('active');
+      document.getElementById('planModal').classList.remove('active');
+    }
+
+    function startDemo() {
+      closeModal();
+      // Demo mód indítása - átirányítás a dashboardra demo módban
+      localStorage.setItem('powerplan_demo_mode', 'true');
+      localStorage.setItem('powerplan_user_completed_questionnaire', 'true');
+      
+      // Demo adatok
+      const demoData = {
+        personalInfo: {
+          firstName: 'Demó',
+          lastName: 'Felhasználó',
+          height: 180,
+          weight: 80,
+          goal: 'fitness'
+        },
+        goals: {
+          mainGoal: 'fitness',
+          timeframe: '3months',
+          specificGoal: 'Általános fittség'
+        }
+      };
+      
+      localStorage.setItem('powerplan_questionnaire', JSON.stringify(demoData));
+      
+      // Átirányítás a dashboardra
+      window.location.href = 'dashboard.html';
+    }
+
+    // Csomag kiválasztás
+    function selectPlan(planType) {
+      const plans = {
+        'basic': {
+          title: 'Alap Csomag',
+          description: '4.990 Ft/hó - Alap szolgáltatások: edzésnapló, statisztikák, 3 előre megírt edzésprogram.'
+        },
+        'premium': {
+          title: 'Prémium Csomag',
+          description: '8.990 Ft/hó - Minden az Alap csomagból + személyre szabott edzéstervek, teljesítményelemzés, korlátlan programok.'
+        },
+        'pro': {
+          title: 'Pro Csomag',
+          description: '12.990 Ft/hó - Minden a Prémium csomagból + részletes étrend-tervezés, heti edzői konzultáció, prioritás ügyfélszolgálat.'
+        }
+      };
+      
+      const plan = plans[planType];
+      document.getElementById('planTitle').textContent = plan.title;
+      document.getElementById('planDescription').textContent = plan.description;
+      
+      // Tároljuk a kiválasztott csomagot
+      localStorage.setItem('powerplan_selected_plan', planType);
+      
+      document.getElementById('planModal').classList.add('active');
+    }
+
+    function proceedToRegistration() {
+      closeModal();
+      window.location.href = 'regisztracio.html';
+    }
+
+    // Kapcsolati űrlap
+    document.getElementById('contactForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      
+      const formData = {
+        name: document.getElementById('name').value,
+        email: document.getElementById('email').value,
+        subject: document.getElementById('subject').value,
+        message: document.getElementById('message').value
+      };
+      
+      console.log('Kapcsolati űrlap adatok:', formData);
+      alert('Köszönjük üzenetét! Hamarosan válaszolunk.');
+      
+      // Űrlap reset
+      this.reset();
+    });
+
+    // Smooth scroll anchor linkekhez
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+      anchor.addEventListener('click', function (e) {
+        e.preventDefault();
+        
+        const targetId = this.getAttribute('href');
+        if (targetId === '#') return;
+        
+        const targetElement = document.querySelector(targetId);
+        if (targetElement) {
+          window.scrollTo({
+            top: targetElement.offsetTop - 80,
+            behavior: 'smooth'
+          });
+        }
+      });
+    });
+
+    // Check if user is already logged in
+    document.addEventListener('DOMContentLoaded', function() {
+      const isLoggedIn = localStorage.getItem('powerplan_user_completed_questionnaire');
+      const isDemoMode = localStorage.getItem('powerplan_demo_mode');
+      
+      if (isLoggedIn && !isDemoMode) {
+        // Ha be van jelentkezve, update navigation
+        const navLeft = document.querySelector('.nav-left');
+        if (navLeft) {
+          navLeft.innerHTML = `
+            <li><a href="dashboard.html">DASHBOARD</a></li>
+            <li><a href="dashboard.html">EDZÉSTERVEK</a></li>
+            <li><a href="dashboard.html">HALADÁSOM</a></li>
+          `;
+        }
+        
+        const navRight = document.querySelector('.nav-right');
+        if (navRight) {
+          navRight.innerHTML = `
+            <li><a href="dashboard.html">PROFILOM</a></li>
+            <li><a href="#" onclick="logout()">KIJELENTKEZÉS</a></li>
+          `;
+        }
+      }
+    });
+
+    function logout() {
+      localStorage.removeItem('powerplan_user_completed_questionnaire');
+      localStorage.removeItem('powerplan_demo_mode');
+      localStorage.removeItem('powerplan_questionnaire');
+      window.location.href = 'index.html';
+    }
+  </script>
+</body>
+</html>

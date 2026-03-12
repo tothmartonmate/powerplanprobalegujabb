@@ -1,0 +1,55 @@
+services:
+  db:
+    image: mysql:8.0
+    container_name: powerplan_db
+    ports:
+      - "3308:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: powerplan
+    volumes:
+      - db_data:/var/lib/mysql
+      - ./db/powerplan.sql:/docker-entrypoint-initdb.d/init.sql
+
+  # HOZZÁADVA: phpMyAdmin az adatbázis vizuális kezeléséhez
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    container_name: powerplan_phpmyadmin
+    ports:
+      - "8081:80" # Ezen a porton éred el majd a böngészőből (localhost:8081)
+    environment:
+      PMA_HOST: db
+    depends_on:
+      - db
+
+  backend:
+    build: ./Backend
+    container_name: powerplan_backend
+    ports:
+      - "5001:5000"
+    volumes:
+      - ./Backend:/app
+      - /app/node_modules
+    env_file:
+      - ./Backend/.env
+    depends_on:
+      - db
+    command: sh -c "npm install && node --watch server.js"
+
+  frontend:
+    image: node:20
+    container_name: powerplan_frontend
+    working_dir: /app
+    volumes:
+      - ./Frontend:/app
+      - /app/node_modules
+    ports:
+      - "5173:5173"
+    environment:
+      - CHOKIDAR_USEPOLLING=true
+    command: sh -c "npm install && npm run dev -- --host"
+    depends_on:
+      - backend
+
+volumes:
+  db_data:

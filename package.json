@@ -1,0 +1,8 @@
+{
+  "name": "powerplan-indito",
+  "version": "1.0.0",
+  "description": "Rendszer indító szkript",
+  "scripts": {
+    "start": "node indito.js"
+  }
+}

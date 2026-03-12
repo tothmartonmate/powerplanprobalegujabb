@@ -1,0 +1,1063 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PowerPlan - Kérdőív</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        :root {
+            --primary: #e63946;
+            --secondary: #f4a261;
+            --dark: #1d3557;
+            --light: #f1faee;
+            --gray: #6c757d;
+            --success: #2a9d8f;
+        }
+
+        body {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .questionnaire-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, var(--dark) 0%, #457b9d 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            opacity: 0.9;
+        }
+
+        .progress-bar {
+            height: 8px;
+            background: rgba(255, 255, 255, 0.2);
+            margin: 25px 0 15px;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--secondary);
+            width: 0%;
+            transition: width 0.5s ease;
+            border-radius: 4px;
+        }
+
+        .progress-text {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+
+        .questionnaire-content {
+            padding: 40px;
+        }
+
+        .question-section {
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .question-section.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .question-title {
+            font-size: 1.8rem;
+            color: var(--dark);
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid var(--light);
+        }
+
+        .question-group {
+            margin-bottom: 30px;
+        }
+
+        .question-group h3 {
+            color: var(--dark);
+            margin-bottom: 15px;
+            font-size: 1.3rem;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: var(--dark);
+            font-size: 1.1rem;
+        }
+
+        .input-field {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+        }
+
+        .input-field:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        .radio-group, .checkbox-group {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+        }
+
+        .radio-label, .checkbox-label {
+            display: flex;
+            align-items: center;
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .radio-label:hover, .checkbox-label:hover {
+            border-color: var(--primary);
+            background: rgba(230, 57, 70, 0.05);
+        }
+
+        .radio-label input, .checkbox-label input {
+            margin-right: 10px;
+            transform: scale(1.2);
+        }
+
+        .slider-container {
+            padding: 20px 0;
+        }
+
+        .slider-value {
+            text-align: center;
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--primary);
+            margin-top: 10px;
+        }
+
+        .range-slider {
+            width: 100%;
+            height: 8px;
+            -webkit-appearance: none;
+            background: #e0e0e0;
+            border-radius: 4px;
+            outline: none;
+        }
+
+        .range-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 24px;
+            height: 24px;
+            background: var(--primary);
+            border-radius: 50%;
+            cursor: pointer;
+            border: 3px solid white;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        .warning-note {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 5px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .warning-note i {
+            color: #856404;
+            font-size: 1.2rem;
+        }
+
+        .skip-btn {
+            background: transparent;
+            border: 2px solid var(--gray);
+            color: var(--gray);
+            padding: 10px 20px;
+            border-radius: 30px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            margin-left: 15px;
+            transition: all 0.3s;
+        }
+
+        .skip-btn:hover {
+            background: var(--gray);
+            color: white;
+        }
+
+        .navigation-buttons {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 40px;
+            padding-top: 30px;
+            border-top: 2px solid var(--light);
+        }
+
+        .nav-btn {
+            padding: 15px 30px;
+            border: none;
+            border-radius: 50px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .prev-btn {
+            background: transparent;
+            color: var(--dark);
+            border: 2px solid var(--dark);
+        }
+
+        .prev-btn:hover {
+            background: var(--dark);
+            color: white;
+        }
+
+        .next-btn {
+            background: var(--primary);
+            color: white;
+            border: 2px solid var(--primary);
+        }
+
+        .next-btn:hover {
+            background: white;
+            color: var(--primary);
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(230, 57, 70, 0.3);
+        }
+
+        .submit-btn {
+            background: var(--success);
+            color: white;
+            padding: 15px 40px;
+            border: none;
+            border-radius: 50px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin: 0 auto;
+        }
+
+        .submit-btn:hover {
+            background: #248277;
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(42, 157, 143, 0.3);
+        }
+
+        .section-counter {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .section-dot {
+            width: 12px;
+            height: 12px;
+            background: #e0e0e0;
+            border-radius: 50%;
+            transition: background 0.3s;
+        }
+
+        .section-dot.active {
+            background: var(--primary);
+        }
+
+        @media (max-width: 768px) {
+            .questionnaire-container {
+                margin: 10px;
+                border-radius: 15px;
+            }
+            
+            .questionnaire-content {
+                padding: 25px;
+            }
+            
+            .question-title {
+                font-size: 1.5rem;
+            }
+            
+            .radio-group, .checkbox-group {
+                grid-template-columns: 1fr;
+            }
+            
+            .navigation-buttons {
+                flex-direction: column;
+                gap: 15px;
+            }
+            
+            .nav-btn {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="questionnaire-container">
+        <div class="header">
+            <h1>Személyre Szabott Edzésterv</h1>
+            <p>Kérjük, töltse ki a kérdőívet, hogy az Ön igényeihez tudjuk igazítani az edzéstervet</p>
+            
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
+            <div class="progress-text">
+                <span id="currentQuestion">1</span> / <span id="totalQuestions">8</span> rész
+            </div>
+        </div>
+
+        <div class="questionnaire-content">
+            <!-- 1. Alap információk -->
+            <div class="question-section active" id="section1">
+                <h2 class="question-title">1. Alap információk</h2>
+                
+                <div class="question-group">
+                    <div class="form-group">
+                        <label for="gender">Nem</label>
+                        <select class="input-field" id="gender" required>
+                            <option value="">Válasszon...</option>
+                            <option value="male">Férfi</option>
+                            <option value="female">Nő</option>
+                            <option value="other">Egyéb</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="height">Magasság (cm)</label>
+                        <input type="number" class="input-field" id="height" min="100" max="250" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="weight">Testsúly (kg)</label>
+                        <input type="number" class="input-field" id="weight" min="30" max="200" step="0.1" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="birthDate">Születési dátum</label>
+                        <input type="date" class="input-field" id="birthDate" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Napi aktivitási szint</label>
+                        <div class="radio-group">
+                            <label class="radio-label">
+                                <input type="radio" name="activity" value="sedentary" required>
+                                Ülőmunka (kevés mozgás)
+                            </label>
+                            <label class="radio-label">
+                                <input type="radio" name="activity" value="light">
+                                Könnyű mozgás (1-3 nap/hét)
+                            </label>
+                            <label class="radio-label">
+                                <input type="radio" name="activity" value="moderate">
+                                Mérsékelt mozgás (3-5 nap/hét)
+                            </label>
+                            <label class="radio-label">
+                                <input type="radio" name="activity" value="very">
+                                Nagyon aktív (6-7 nap/hét)
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 2. Edzés tapasztalat -->
+            <div class="question-section" id="section2">
+                <h2 class="question-title">2. Edzés tapasztalat</h2>
+                
+                <div class="question-group">
+                    <div class="form-group">
+                        <label>Milyen gyakran edzel?</label>
+                        <select class="input-field" id="trainingFrequency" required>
+                            <option value="">Válasszon...</option>
+                            <option value="never">Soha</option>
+                            <option value="beginner">Kezdő (0-6 hónap)</option>
+                            <option value="intermediate">Középhaladó (6-24 hónap)</option>
+                            <option value="advanced">Haladó (2+ év)</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Hetente hányszor szoktál edzeni?</label>
+                        <div class="radio-group">
+                            <label class="radio-label">
+                                <input type="radio" name="weeklyTraining" value="0" required>
+                                0 alkalom
+                            </label>
+                            <label class="radio-label">
+                                <input type="radio" name="weeklyTraining" value="1-2">
+                                1-2 alkalom
+                            </label>
+                            <label class="radio-label">
+                                <input type="radio" name="weeklyTraining" value="3-4">
+                                3-4 alkalom
+                            </label>
+                            <label class="radio-label">
+                                <input type="radio" name="weeklyTraining" value="5+">
+                                5+ alkalom
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Milyen típusú edzéseket végeztél eddig? (több válasz is lehetséges)</label>
+                        <div class="checkbox-group">
+                            <label class="checkbox-label">
+                                <input type="checkbox" name="trainingTypes" value="weight">
+                                Súlyzós edzés
+                            </label>
+                            <label class="checkbox-label">
+                                <input type="checkbox" name="trainingTypes" value="cardio">
+                                Kardió
+                            </label>
+                            <label class="checkbox-label">
+                                <input type="checkbox" name="trainingTypes" value="crossfit">
+                                Crossfit / funkcionális
+                            </label>
+                            <label class="checkbox-label">
+                                <input type="checkbox" name="trainingTypes" value="home">
+                                Otthoni edzés
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 3. Egészségügyi információk -->
+            <div class="question-section" id="section3">
+                <h2 class="question-title">3. Egészségügyi információk</h2>
+                
+                <div class="warning-note">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <span>Ezek az információk segítenek a biztonságos edzésterv elkészítésében. Minden adat bizalmas kezelés alá esik.</span>
+                </div>
+                
+                <div class="question-group">
+                    <div class="form-group">
+                        <label>Van-e jelenleg sérülésed?</label>
+                        <div class="radio-group">
+                            <label class="radio-label">
+                                <input type="radio" name="currentInjury" value="no" required>
+                                Nincs
+                            </label>
+                            <label class="radio-label">
+                                <input type="radio" name="currentInjury" value="shoulder">
+                                Váll
+                            </label>
+                            <label class="radio-label">
+                                <input type="radio" name="currentInjury" value="knee">
+                                Térd
+                            </label>
+                            <label class="radio-label">
+                                <input type="radio" name="currentInjury" value="back">
+                                Hát
+                            </label>
+                        </div>
+                        <button type="button" class="skip-btn">Kihagyom</button>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Van-e krónikus betegséged?</label>
+                        <div class="checkbox-group">
+                            <label class="checkbox-label">
+                                <input type="checkbox" name="chronicConditions" value="bloodPressure">
+                                Magas vérnyomás
+                            </label>
+                            <label class="checkbox-label">
+                                <input type="checkbox" name="chronicConditions" value="diabetes">
+                                Cukorbetegség
+                            </label>
+                            <label class="checkbox-label">
+                                <input type="checkbox" name="chronicConditions" value="heart">
+                                Szívprobléma
+                            </label>
+                            <label class="checkbox-label">
+                                <input type="checkbox" name="chronicConditions" value="other">
+                                Egyéb
+                            </label>
+                        </div>
+                        <button type="button" class="skip-btn">Kihagyom</button>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Szed-e rendszeresen gyógyszert?</label>
+                        <textarea class="input-field" id="medications" rows="3" placeholder="Ha igen, kérjük írja le..."></textarea>
+                        <button type="button" class="skip-btn">Kihagyom</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 4. Célok -->
+            <div class="question-section" id="section4">
+                <h2 class="question-title">4. Célok</h2>
+                
+                <div class="question-group">
+                    <div class="form-group">
+                        <label>Mi a fő célod?</label>
+                        <div class="radio-group">
+                            <label class="radio-label">
+                                <input type="radio" name="mainGoal" value="weightLoss" required>
+                                Fogyás
+                            </label>
+                            <label class="radio-label">
+                                <input type="radio" name="mainGoal" value="muscleGain">
+                                Izomtömeg-növelés
+                            </label>
+                            <label class="radio-label">
+                                <input type="radio" name="mainGoal" value="fitness">
+                                Általános fittség
+                            </label>
+                            <label class="radio-label">
+                                <input type="radio" name="mainGoal" value="strength">
+                                Erőnövelés
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Mennyi idő alatt szeretnél eredményt?</label>
+                        <select class="input-field" id="timeframe" required>
+                            <option value="">Válasszon...</option>
+                            <option value="1month">1 hónap</option>
+                            <option value="3months">3 hónap</option>
+                            <option value="6months">6 hónap</option>
+                            <option value="1year">1 év</option>
+                            <option value="longterm">Hosszú távú</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Van-e konkrét cél?</label>
+                        <textarea class="input-field" id="specificGoal" rows="3" placeholder="Pl. -10 kg, fekvenyomás 100 kg, futás 5 km..."></textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Mi a legnagyobb motivációd?</label>
+                        <div class="checkbox-group">
+                            <label class="checkbox-label">
+                                <input type="checkbox" name="motivation" value="health">
+                                Egészség
+                            </label>
+                            <label class="checkbox-label">
+                                <input type="checkbox" name="motivation" value="appearance">
+                                Kinézet
+                            </label>
+                            <label class="checkbox-label">
+                                <input type="checkbox" name="motivation" value="performance">
+                                Teljesítmény
+                            </label>
+                            <label class="checkbox-label">
+                                <input type="checkbox" name="motivation" value="confidence">
+                                Magabiztosság
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 5. Életmód -->
+            <div class="question-section" id="section5">
+                <h2 class="question-title">5. Életmód</h2>
+                
+                <div class="question-group">
+                    <div class="form-group">
+                        <label>Mennyit alszol átlagosan?</label>
+                        <div class="slider-container">
+                            <input type="range" class="range-slider" id="sleepHours" min="4" max="10" step="0.5" value="7">
+                            <div class="slider-value" id="sleepValue">7 óra</div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Mennyire stresszes az életviteled? (1 = alacsony, 10 = nagyon magas)</label>
+                        <div class="slider-container">
+                            <input type="range" class="range-slider" id="stressLevel" min="1" max="10" value="5">
+                            <div class="slider-value" id="stressValue">5/10</div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Mennyit ülsz naponta?</label>
+                        <div class="radio-group">
+                            <label class="radio-label">
+                                <input type="radio" name="sittingTime" value="low" required>
+                                0-4 óra
+                            </label>
+                            <label class="radio-label">
+                                <input type="radio" name="sittingTime" value="medium">
+                                4-8 óra
+                            </label>
+                            <label class="radio-label">
+                                <input type="radio" name="sittingTime" value="high">
+                                8+ óra
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 6. Táplálkozás -->
+            <div class="question-section" id="section6">
+                <h2 class="question-title">6. Táplálkozás</h2>
+                
+                <div class="question-group">
+                    <div class="form-group">
+                        <label>Követsz-e speciális étrendet?</label>
+                        <div class="checkbox-group">
+                            <label class="checkbox-label">
+                                <input type="checkbox" name="diet" value="none">
+                                Nem
+                            </label>
+                            <label class="checkbox-label">
+                                <input type="checkbox" name="diet" value="vegetarian">
+                                Vegetáriánus
+                            </label>
+                            <label class="checkbox-label">
+                                <input type="checkbox" name="diet" value="vegan">
+                                Vegán
+                            </label>
+                            <label class="checkbox-label">
+                                <input type="checkbox" name="diet" value="keto">
+                                Keto
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Van-e ételallergiád?</label>
+                        <textarea class="input-field" id="allergies" rows="2" placeholder="Ha igen, kérjük írja le..."></textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Mennyire érzed kontrolláltnak az étkezésed? (1 = egyáltalán nem, 10 = teljesen)</label>
+                        <div class="slider-container">
+                            <input type="range" class="range-slider" id="dietControl" min="1" max="10" value="5">
+                            <div class="slider-value" id="dietControlValue">5/10</div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Szeretnél étrendi ajánlásokat?</label>
+                        <div class="radio-group">
+                            <label class="radio-label">
+                                <input type="radio" name="dietRecommendations" value="yes" required>
+                                Igen
+                            </label>
+                            <label class="radio-label">
+                                <input type="radio" name="dietRecommendations" value="no">
+                                Nem
+                            </label>
+                            <label class="radio-label">
+                                <input type="radio" name="dietRecommendations" value="maybe">
+                                Talán
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 7. Preferenciák -->
+            <div class="question-section" id="section7">
+                <h2 class="question-title">7. Edzés preferenciák</h2>
+                
+                <div class="question-group">
+                    <div class="form-group">
+                        <label>Hol edzel leggyakrabban?</label>
+                        <div class="radio-group">
+                            <label class="radio-label">
+                                <input type="radio" name="trainingLocation" value="gym" required>
+                                Edzőterem
+                            </label>
+                            <label class="radio-label">
+                                <input type="radio" name="trainingLocation" value="home">
+                                Otthon
+                            </label>
+                            <label class="radio-label">
+                                <input type="radio" name="trainingLocation" value="outdoor">
+                                Kint
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Mennyi időt tudsz egy edzésre szánni?</label>
+                        <select class="input-field" id="workoutTime" required>
+                            <option value="">Válasszon...</option>
+                            <option value="30">30 perc</option>
+                            <option value="45">45 perc</option>
+                            <option value="60">60 perc</option>
+                            <option value="75">75 perc</option>
+                            <option value="90">90+ perc</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Milyen gyakran szeretnél edzeni?</label>
+                        <div class="radio-group">
+                            <label class="radio-label">
+                                <input type="radio" name="preferredFrequency" value="2" required>
+                                2 alkalom/hét
+                            </label>
+                            <label class="radio-label">
+                                <input type="radio" name="preferredFrequency" value="3">
+                                3 alkalom/hét
+                            </label>
+                            <label class="radio-label">
+                                <input type="radio" name="preferredFrequency" value="4">
+                                4 alkalom/hét
+                            </label>
+                            <label class="radio-label">
+                                <input type="radio" name="preferredFrequency" value="5+">
+                                5+ alkalom/hét
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 8. Önértékelés -->
+            <div class="question-section" id="section8">
+                <h2 class="question-title">8. Önértékelés</h2>
+                
+                <div class="question-group">
+                    <div class="form-group">
+                        <label>Mennyire vagy elégedett a jelenlegi fizikumoddal? (1 = egyáltalán nem, 10 = teljesen)</label>
+                        <div class="slider-container">
+                            <input type="range" class="range-slider" id="satisfaction" min="1" max="10" value="5">
+                            <div class="slider-value" id="satisfactionValue">5/10</div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Mennyire érzed magad energikusnak napközben?</label>
+                        <div class="slider-container">
+                            <input type="range" class="range-slider" id="energy" min="1" max="10" value="5">
+                            <div class="slider-value" id="energyValue">5/10</div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Mi akadályozott eddig a rendszeres edzésben?</label>
+                        <div class="checkbox-group">
+                            <label class="checkbox-label">
+                                <input type="checkbox" name="obstacles" value="time">
+                                Időhiány
+                            </label>
+                            <label class="checkbox-label">
+                                <input type="checkbox" name="obstacles" value="motivation">
+                                Motiváció hiánya
+                            </label>
+                            <label class="checkbox-label">
+                                <input type="checkbox" name="obstacles" value="knowledge">
+                                Tudás hiánya
+                            </label>
+                            <label class="checkbox-label">
+                                <input type="checkbox" name="obstacles" value="money">
+                                Pénzügyi okok
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Egyéb megjegyzések vagy igények:</label>
+                        <textarea class="input-field" id="comments" rows="4" placeholder="Bármi más, amit szeretnél megosztani..."></textarea>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Navigáció -->
+            <div class="navigation-buttons" id="navButtons">
+                <button class="nav-btn prev-btn" id="prevBtn" onclick="prevSection()">
+                    <i class="fas fa-arrow-left"></i> Előző
+                </button>
+                <button class="nav-btn next-btn" id="nextBtn" onclick="nextSection()">
+                    Következő <i class="fas fa-arrow-right"></i>
+                </button>
+            </div>
+
+            <!-- Submit gomb -->
+            <div id="submitContainer" style="display: none; text-align: center; margin-top: 40px;">
+                <button class="submit-btn" onclick="submitQuestionnaire()">
+                    <i class="fas fa-check-circle"></i> Kérdőív beküldése
+                </button>
+            </div>
+
+            <!-- Section counter -->
+            <div class="section-counter" id="sectionCounter">
+                <div class="section-dot active" data-section="1"></div>
+                <div class="section-dot" data-section="2"></div>
+                <div class="section-dot" data-section="3"></div>
+                <div class="section-dot" data-section="4"></div>
+                <div class="section-dot" data-section="5"></div>
+                <div class="section-dot" data-section="6"></div>
+                <div class="section-dot" data-section="7"></div>
+                <div class="section-dot" data-section="8"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentSection = 1;
+        const totalSections = 8;
+
+        // Slider értékek frissítése
+        document.getElementById('sleepHours').addEventListener('input', function() {
+            document.getElementById('sleepValue').textContent = this.value + ' óra';
+        });
+
+        document.getElementById('stressLevel').addEventListener('input', function() {
+            document.getElementById('stressValue').textContent = this.value + '/10';
+        });
+
+        document.getElementById('dietControl').addEventListener('input', function() {
+            document.getElementById('dietControlValue').textContent = this.value + '/10';
+        });
+
+        document.getElementById('satisfaction').addEventListener('input', function() {
+            document.getElementById('satisfactionValue').textContent = this.value + '/10';
+        });
+
+        document.getElementById('energy').addEventListener('input', function() {
+            document.getElementById('energyValue').textContent = this.value + '/10';
+        });
+
+        // Skip gombok eseménykezelői
+        document.querySelectorAll('.skip-btn').forEach(button => {
+            button.addEventListener('click', function() {
+                const formGroup = this.parentElement;
+                const inputs = formGroup.querySelectorAll('input, textarea, select');
+                inputs.forEach(input => {
+                    input.required = false;
+                    if (input.type === 'radio' || input.type === 'checkbox') {
+                        input.checked = false;
+                    } else {
+                        input.value = '';
+                    }
+                });
+                this.textContent = 'Kihagyva ✓';
+                this.disabled = true;
+            });
+        });
+
+        function updateProgress() {
+            const progress = (currentSection / totalSections) * 100;
+            document.getElementById('progressFill').style.width = progress + '%';
+            document.getElementById('currentQuestion').textContent = currentSection;
+            document.getElementById('totalQuestions').textContent = totalSections;
+            
+            // Frissítjük a pontokat
+            document.querySelectorAll('.section-dot').forEach((dot, index) => {
+                if (index + 1 === currentSection) {
+                    dot.classList.add('active');
+                } else {
+                    dot.classList.remove('active');
+                }
+            });
+            
+            // Megjelenítjük/elrejtjük a gombokat
+            if (currentSection === 1) {
+                document.getElementById('prevBtn').style.visibility = 'hidden';
+            } else {
+                document.getElementById('prevBtn').style.visibility = 'visible';
+            }
+            
+            if (currentSection === totalSections) {
+                document.getElementById('nextBtn').style.display = 'none';
+                document.getElementById('navButtons').style.display = 'none';
+                document.getElementById('submitContainer').style.display = 'block';
+            } else {
+                document.getElementById('nextBtn').style.display = 'flex';
+                document.getElementById('navButtons').style.display = 'flex';
+                document.getElementById('submitContainer').style.display = 'none';
+            }
+        }
+
+        function showSection(sectionNumber) {
+            // Elrejtjük az összes szekciót
+            document.querySelectorAll('.question-section').forEach(section => {
+                section.classList.remove('active');
+            });
+            
+            // Megjelenítjük a kért szekciót
+            document.getElementById(`section${sectionNumber}`).classList.add('active');
+            currentSection = sectionNumber;
+            updateProgress();
+        }
+
+        function nextSection() {
+            // Ellenőrizzük a kötelező mezőket
+            const currentSectionEl = document.getElementById(`section${currentSection}`);
+            const requiredInputs = currentSectionEl.querySelectorAll('[required]');
+            let isValid = true;
+            
+            requiredInputs.forEach(input => {
+                if (!input.value || (input.type === 'checkbox' && !input.checked)) {
+                    isValid = false;
+                    input.style.borderColor = 'var(--primary)';
+                    // Animáció a hibás mezőhöz
+                    input.style.animation = 'shake 0.5s';
+                    setTimeout(() => {
+                        input.style.animation = '';
+                    }, 500);
+                } else {
+                    input.style.borderColor = '';
+                }
+            });
+            
+            if (!isValid) {
+                alert('Kérjük, töltse ki az összes kötelező mezőt!');
+                return;
+            }
+            
+            if (currentSection < totalSections) {
+                showSection(currentSection + 1);
+            }
+        }
+
+        function prevSection() {
+            if (currentSection > 1) {
+                showSection(currentSection - 1);
+            }
+        }
+
+        function submitQuestionnaire() {
+            // Adatok összegyűjtése
+            const questionnaireData = {
+                personalInfo: {
+                    gender: document.getElementById('gender').value,
+                    height: document.getElementById('height').value,
+                    weight: document.getElementById('weight').value,
+                    birthDate: document.getElementById('birthDate').value,
+                    activity: document.querySelector('input[name="activity"]:checked')?.value
+                },
+                trainingExperience: {
+                    frequency: document.getElementById('trainingFrequency').value,
+                    weeklyTraining: document.querySelector('input[name="weeklyTraining"]:checked')?.value,
+                    trainingTypes: Array.from(document.querySelectorAll('input[name="trainingTypes"]:checked'))
+                        .map(cb => cb.value)
+                },
+                healthInfo: {
+                    currentInjury: document.querySelector('input[name="currentInjury"]:checked')?.value,
+                    chronicConditions: Array.from(document.querySelectorAll('input[name="chronicConditions"]:checked'))
+                        .map(cb => cb.value),
+                    medications: document.getElementById('medications').value
+                },
+                goals: {
+                    mainGoal: document.querySelector('input[name="mainGoal"]:checked')?.value,
+                    timeframe: document.getElementById('timeframe').value,
+                    specificGoal: document.getElementById('specificGoal').value,
+                    motivation: Array.from(document.querySelectorAll('input[name="motivation"]:checked'))
+                        .map(cb => cb.value)
+                },
+                lifestyle: {
+                    sleepHours: document.getElementById('sleepHours').value,
+                    stressLevel: document.getElementById('stressLevel').value,
+                    sittingTime: document.querySelector('input[name="sittingTime"]:checked')?.value
+                },
+                nutrition: {
+                    diet: Array.from(document.querySelectorAll('input[name="diet"]:checked'))
+                        .map(cb => cb.value),
+                    allergies: document.getElementById('allergies').value,
+                    dietControl: document.getElementById('dietControl').value,
+                    dietRecommendations: document.querySelector('input[name="dietRecommendations"]:checked')?.value
+                },
+                preferences: {
+                    trainingLocation: document.querySelector('input[name="trainingLocation"]:checked')?.value,
+                    workoutTime: document.getElementById('workoutTime').value,
+                    preferredFrequency: document.querySelector('input[name="preferredFrequency"]:checked')?.value
+                },
+                selfAssessment: {
+                    satisfaction: document.getElementById('satisfaction').value,
+                    energy: document.getElementById('energy').value,
+                    obstacles: Array.from(document.querySelectorAll('input[name="obstacles"]:checked'))
+                        .map(cb => cb.value),
+                    comments: document.getElementById('comments').value
+                },
+                submittedAt: new Date().toISOString()
+            };
+            
+            // Mentés localStorage-ba (ideiglenes)
+            localStorage.setItem('powerplan_questionnaire', JSON.stringify(questionnaireData));
+            localStorage.setItem('powerplan_user_completed_questionnaire', 'true');
+            
+            // Sikeres beküldés üzenet
+            alert('Köszönjük a kérdőív kitöltését! Az adataid alapján személyre szabott edzéstervet készítünk.');
+            
+            // Átirányítás a dashboard-ra
+            setTimeout(() => {
+                window.location.href = 'dashboard.html';
+            }, 2000);
+        }
+
+        // Szekció pontokra kattintás
+        document.querySelectorAll('.section-dot').forEach((dot, index) => {
+            dot.addEventListener('click', () => {
+                showSection(index + 1);
+            });
+        });
+
+        // Betöltéskor beállítjuk a dátum mező maximumát (18 év)
+        document.addEventListener('DOMContentLoaded', function() {
+            const today = new Date();
+            const maxDate = new Date(today.getFullYear() - 18, today.getMonth(), today.getDate());
+            document.getElementById('birthDate').max = maxDate.toISOString().split('T')[0];
+            
+            updateProgress();
+        });
+    </script>
+</body>
+</html>
