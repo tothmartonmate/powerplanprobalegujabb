@@ -50,6 +50,15 @@ function Registration({ navigateTo }) {
 
       // 3. Válasz ellenőrzése
       if (response.ok) {
+        // Regisztráció után automatikusan "bejelentkeztetjük" a böngészőben, hogy a kérdőívnél legyen userId
+        localStorage.setItem('powerplan_user_logged_in', 'true');
+        if (data.userId) {
+          localStorage.setItem('powerplan_current_user', JSON.stringify({
+            id: data.userId,
+            full_name: userData.full_name,
+            email: userData.email
+          }));
+        }
         alert('✅ Sikeres regisztráció! Kérlek, töltsd ki a kérdőívet a személyre szabott élményhez.');
         navigateTo('questionnaire');
       } else {
@@ -79,22 +88,9 @@ function Registration({ navigateTo }) {
   };
 
   return (
-    <>
+    <div className="regisztracio-container">
       <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
       
-      {/* Navigáció */}
-      <nav>
-        <a href="#" className="logo" style={{ textDecoration: 'none' }} onClick={(e) => handleNavClick(e, 'home')}>Power<span>Plan</span></a>
-        <ul className="nav-menu">
-          <li><a href="#" onClick={(e) => handleNavClick(e, 'home')}>KEZDŐLAP</a></li>
-          <li><a href="#" onClick={(e) => handleNavClick(e, 'bejelentkezes')}>BEJELENTKEZÉS</a></li>
-          <li><a href="#" onClick={(e) => handleNavClick(e, 'home', 'services')}>SZOLGÁLTATÁSAINK</a></li>
-          <li><a href="#" onClick={(e) => handleNavClick(e, 'home', 'about')}>RÓLUNK</a></li>
-          <li><a href="#" onClick={(e) => handleNavClick(e, 'home', 'pricing')}>ÁRAK</a></li>
-          <li><a href="#" onClick={(e) => handleNavClick(e, 'home', 'contact')}>KAPCSOLAT</a></li>
-        </ul>
-      </nav>
-
       {/* Regisztrációs űrlap */}
       <div className="form-container">
         <div className="form-box">
@@ -217,7 +213,7 @@ function Registration({ navigateTo }) {
           <p>&copy; 2026 Power Plan Edzőtermi Alkalmazás. Minden jog fenntartva.</p>
         </div>
       </footer>
-    </>
+    </div>
   );
 }
 

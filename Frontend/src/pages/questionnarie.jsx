@@ -302,7 +302,7 @@ const Questionnaire = ({ navigateTo, setIsLoggedIn }) => {
   };
 
   // JAVÍTOTT submitQuestionnaire függvény
-  const submitQuestionnaire = () => {
+  const submitQuestionnaire = async () => {
     if (!validateSection(currentSection)) return;
 
     const questionnaireData = {
@@ -310,7 +310,46 @@ const Questionnaire = ({ navigateTo, setIsLoggedIn }) => {
       submittedAt: new Date().toISOString()
     };
 
-    // Save to localStorage
+    try {
+      // 1. Adatok elküldése az adatbázisba (Backend hívás)
+      const token = localStorage.getItem('powerplan_token');
+      const currentUserStr = localStorage.getItem('powerplan_current_user');
+      const userId = currentUserStr ? JSON.parse(currentUserStr).id : null;
+      
+      if (!userId) {
+        alert("Hiba: Nem vagy bejelentkezve! Kérjük jelentkezz be a mentéshez.");
+        return;
+      }
+
+      const headers = {
+        'Content-Type': 'application/json'
+      };
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+
+      const response = await fetch('http://localhost:5001/api/questionnaire', {
+        method: 'POST',
+        headers: headers,
+        body: JSON.stringify({
+          userId: userId,
+          questionnaire: questionnaireData
+        }),
+      });
+
+      if (!response.ok) {
+        const errData = await response.json();
+        console.error('Hiba az adatbázisba mentéskor:', errData);
+        alert(`Nem sikerült menteni az adatokat az adatbázisba: ${errData.error || 'Ismeretlen hiba'}`);
+        return; // Ne engedjük tovább a dashboardra, ha nem sikerült a mentés!
+      }
+    } catch (error) {
+      console.error('Nem sikerült csatlakozni a szerverhez:', error);
+      alert('Szerverhiba: Nem sikerült csatlakozni a backendhez!');
+      return;
+    }
+
+    // 2. Save to localStorage (megtartjuk, hogy azonnal működjön a dashboard)
     localStorage.setItem('powerplan_questionnaire', JSON.stringify(questionnaireData));
     localStorage.setItem('powerplan_user_completed_questionnaire', 'true');
 
@@ -319,13 +358,10 @@ const Questionnaire = ({ navigateTo, setIsLoggedIn }) => {
 
     alert('Köszönjük a kérdőív kitöltését! Az adataid alapján személyre szabott edzéstervet készítünk.');
 
-    // JAVÍTÁS: Navigáció dashboard-ra 2 másodperc múlva
     setTimeout(() => {
-      console.log('Navigálás dashboard-ra...');
       if (navigateTo) {
         navigateTo('dashboard');
       } else {
-        console.error('navigateTo függvény nem elérhető!');
         window.location.href = '/dashboard';
       }
     }, 2000);

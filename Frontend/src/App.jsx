@@ -416,41 +416,43 @@ function App() {
 
   return (
     <>
-      {/* Navigáció */}
-      <nav>
-        <div className="logo" onClick={() => navigateTo('home')}>
-          <i className="fas fa-dumbbell"></i> Power<span>Plan</span>
-        </div>
-        <ul className="nav-left">
-          {isLoggedIn ? (
-            <>
-              <li><a href="#" onClick={() => navigateTo('dashboard')}>DASHBOARD</a></li>
-              <li><a href="#" onClick={() => navigateTo('dashboard')}>EDZÉSTERVEK</a></li>
-              <li><a href="#" onClick={() => navigateTo('dashboard')}>HALADÁSOM</a></li>
-            </>
-          ) : (
-            <>
-              <li><a href="#" onClick={() => navigateTo('regisztracio')}>REGISZTRÁCIÓ</a></li>
-              <li><a href="#" onClick={() => navigateTo('bejelentkezes')}>BEJELENTKEZÉS</a></li>
-              <li><a href="#" onClick={() => navigateTo('home')}>SZOLGÁLTATÁSAINK</a></li>
-            </>
-          )}
-        </ul>
-        <ul className="nav-right">
-          {isLoggedIn ? (
-            <>
-              <li><a href="#" onClick={() => navigateTo('dashboard')}>PROFILOM</a></li>
-              <li><a href="#" onClick={handleLogout}>KIJELENTKEZÉS</a></li>
-            </>
-          ) : (
-            <>
-              <li><a href="#" onClick={() => navigateTo('home')}>RÓLUNK</a></li>
-              <li><a href="#" onClick={() => navigateTo('home')}>ÁRAK</a></li>
-              <li><a href="#" onClick={() => navigateTo('home')}>KAPCSOLAT</a></li>
-            </>
-          )}
-        </ul>
-      </nav>
+      {/* Navigáció - Csak akkor jelenik meg, ha NEM a Dashboard-on vagyunk */}
+      {currentPage !== 'dashboard' && (
+        <nav>
+          <a href="#" className="logo" style={{ textDecoration: 'none' }} onClick={(e) => { e.preventDefault(); navigateTo('home'); }}>
+            <i className="fas fa-dumbbell" style={{marginRight: '8px'}}></i> Power<span>Plan</span>
+          </a>
+          <ul className="nav-left">
+            {isLoggedIn ? (
+              <>
+                <li><a href="#" onClick={() => navigateTo('dashboard')}>DASHBOARD</a></li>
+                <li><a href="#" onClick={() => navigateTo('dashboard')}>EDZÉSTERVEK</a></li>
+                <li><a href="#" onClick={() => navigateTo('dashboard')}>HALADÁSOM</a></li>
+              </>
+            ) : (
+              <>
+                <li><a href="#" onClick={() => navigateTo('regisztracio')}>REGISZTRÁCIÓ</a></li>
+                <li><a href="#" onClick={() => navigateTo('bejelentkezes')}>BEJELENTKEZÉS</a></li>
+                <li><a href="#" onClick={() => navigateTo('home')}>SZOLGÁLTATÁSAINK</a></li>
+              </>
+            )}
+          </ul>
+          <ul className="nav-right">
+            {isLoggedIn ? (
+              <>
+                <li><a href="#" onClick={() => navigateTo('dashboard')}>PROFILOM</a></li>
+                <li><a href="#" onClick={handleLogout}>KIJELENTKEZÉS</a></li>
+              </>
+            ) : (
+              <>
+                <li><a href="#" onClick={() => navigateTo('home')}>RÓLUNK</a></li>
+                <li><a href="#" onClick={() => navigateTo('home')}>ÁRAK</a></li>
+                <li><a href="#" onClick={() => navigateTo('home')}>KAPCSOLAT</a></li>
+              </>
+            )}
+          </ul>
+        </nav>
+      )}
 
       {/* Oldaltartalom */}
       {currentPage === 'home' 

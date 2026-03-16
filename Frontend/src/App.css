@@ -71,7 +71,7 @@ nav a:hover::after {
   width: 100%;
 }
 
-.logo {
+nav .logo {
   font-size: 1.8rem;
   font-weight: 700;
   color: var(--primary);
@@ -81,7 +81,7 @@ nav a:hover::after {
   margin-right: auto; /* HOZZÁADVA: Ez tolja a logót teljesen balra, a menüt pedig jobbra! */
 }
 
-.logo span {
+nav .logo span {
   color: var(--dark);
 }
 

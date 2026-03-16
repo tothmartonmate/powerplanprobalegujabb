@@ -14,89 +14,12 @@
   --gray: #6c757d;
 }
 
-body {
+.regisztracio-container {
   background: linear-gradient(135deg, var(--dark) 0%, #457b9d 100%);
-  color: #333;
-  line-height: 1.6;
-  min-height: 100vh;
-  margin: 0;
-}
-
-/* HOZZÁADVA: Ez kényszeríti ki, hogy a React doboza és a lábléc a képernyő széléig érjen */
-#root {
-  width: 100%;
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-}
-
-/* Navigáció - Főoldalhoz igazítva */
-nav {
-  position: absolute;
-  top: 0;
-  left: 0;
   width: 100%;
-  display: flex;
-  justify-content: flex-end; /* Jobbra rendezi a menüpontokat */
-  align-items: center;
-  padding: 1.5rem 5%;
-  background-color: white;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-  z-index: 1000;
-  gap: 2rem;
-}
-
-.nav-menu {
-  display: flex;
-  list-style: none;
-  gap: 1.5rem;
-}
-
-.nav-menu li {
-  margin: 0;
-}
-
-nav a {
-  text-decoration: none;
-  color: var(--dark);
-  font-weight: 600;
-  font-size: 0.9rem;
-  transition: color 0.3s;
-  position: relative;
-}
-
-nav a:hover {
-  color: var(--primary);
-}
-
-nav a::after {
-  content: '';
-  position: absolute;
-  width: 0;
-  height: 2px;
-  bottom: -5px;
-  left: 0;
-  background-color: var(--primary);
-  transition: width 0.3s;
-}
-
-nav a:hover::after {
-  width: 100%;
-}
-
-.logo {
-  font-size: 1.8rem;
-  font-weight: 700;
-  color: var(--primary);
-  display: flex;
-  align-items: center;
-  cursor: pointer;
-  margin-right: auto; /* HOZZÁADVA: Ez tolja a logót balra, a menüt meg jobbra! */
-  text-decoration: none;
-}
-
-.logo span {
-  color: var(--dark);
 }
 
 /* Űrlap konténer */
@@ -106,7 +29,7 @@ nav a:hover::after {
   align-items: center;
   flex-grow: 1;
   padding: 2rem 5%;
-  margin-top: 100px;
+  margin-top: 2rem;
   width: 100%;
 }
 
@@ -116,7 +39,7 @@ nav a:hover::after {
   box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
   padding: 3rem;
   width: 100%;
-  max-width: 500px;
+  max-width: 650px;
   text-align: center;
 }
 
@@ -398,24 +321,8 @@ footer {
 
 /* Reszponzív design */
 @media (max-width: 768px) {
-  nav {
-    flex-direction: column;
-    padding: 1rem 5%;
-  }
-
-  .logo {
-    margin-right: 0;
-  }
-
-  .nav-menu {
-    margin-top: 1rem;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 1rem;
-  }
-
   .form-container {
-    margin-top: 150px;
+    margin-top: 2rem;
   }
 
   .form-box {
@@ -429,21 +336,11 @@ footer {
 }
 
 @media (max-width: 576px) {
-  .nav-menu {
-    flex-direction: column;
-    align-items: center;
-    gap: 0.5rem;
-  }
-
-  .nav-menu li {
-    margin: 0.3rem 0;
-  }
-
   .form-box {
     padding: 1.5rem;
   }
   
   .form-container {
-    margin-top: 230px;
+    margin-top: 2rem;
   }
 }

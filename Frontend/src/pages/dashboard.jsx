@@ -48,9 +48,38 @@ const Dashboard = ({ navigateTo, handleLogout }) => {
     return () => clearInterval(interval);
   }, []);
 
-  const loadUserData = () => {
+  const loadUserData = async () => {
+    const token = localStorage.getItem('powerplan_token');
     const savedQuestionnaire = localStorage.getItem('powerplan_questionnaire');
     const savedUser = localStorage.getItem('powerplan_current_user');
+    const currentUser = savedUser ? JSON.parse(savedUser) : null;
+
+    // 1. Kérdőív adatainak letöltése az Adatbázisból (Szerverről)
+    if (token && currentUser?.id) {
+      try {
+        const response = await fetch(`http://localhost:5001/api/questionnaire/${currentUser.id}`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (response.ok) {
+          const data = await response.json();
+          if (data && data.questionnaire) {
+            const enrichedData = {
+              ...data.questionnaire,
+              personalInfo: {
+                ...data.questionnaire.personalInfo,
+                firstName: currentUser.full_name?.split(' ')[1] || 'Felhasználó',
+                lastName: currentUser.full_name?.split(' ')[0] || ''
+              }
+            };
+            setUserData(enrichedData);
+            localStorage.setItem('powerplan_questionnaire', JSON.stringify(enrichedData));
+            return; // Sikeres API hívás esetén itt megállunk
+          }
+        }
+      } catch (error) {
+        console.error('Hiba a kérdőív betöltésekor:', error);
+      }
+    }
     
     if (savedQuestionnaire) {
       setUserData(JSON.parse(savedQuestionnaire));
@@ -939,7 +968,8 @@ const Dashboard = ({ navigateTo, handleLogout }) => {
               </button>
             </div>
 
-            <div className="profile-form" id="profileForm">
+            {/* A key biztosítja, hogy a szerver válasza után frissüljenek az input mezők! */}
+            <div className="profile-form" id="profileForm" key={userData.personalInfo?.height || 'loading'}>
               <div>
                 <div className="form-group">
                   <label>Teljes név</label>

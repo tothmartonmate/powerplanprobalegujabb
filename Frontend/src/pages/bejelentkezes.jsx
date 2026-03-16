@@ -88,20 +88,11 @@ function Bejelentkezes({ navigateTo, setIsLoggedIn }) {
           
           alert('✅ Sikeres bejelentkezés! Üdvözöljük újra!');
           
-          // --- NAVIGÁCIÓS LOGIKA JAVÍTÁSA ---
-          // Megnézzük, hogy a kérdőív (Questionnaire) ki lett-e már töltve valaha
-          const completed = localStorage.getItem('powerplan_user_completed_questionnaire');
-          
+          // JAVÍTÁS: Bejelentkezés után MINDIG a dashboard-ra megyünk, sosem a kérdőívre!
           if (navigateTo) {
-            if (completed === 'true') {
-              // Ha már kitöltötte, mehet a Dashboard-ra
-              navigateTo('dashboard');
-            } else {
-              // Ha még nem töltötte ki, irány a Kérdőív!
-              navigateTo('questionnaire');
-            }
+            navigateTo('dashboard');
           } else {
-            window.location.href = '/';
+            window.location.href = '/dashboard';
           }
         }
       } catch (error) {

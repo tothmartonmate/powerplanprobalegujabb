@@ -15,15 +15,9 @@
   --success: #2a9d8f;
 }
 
-body {
-  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-  min-height: 100vh;
-  padding: 20px;
-}
-
 .questionnaire-container {
   max-width: 800px;
-  margin: 0 auto;
+  margin: 40px auto;
   background: white;
   border-radius: 20px;
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
