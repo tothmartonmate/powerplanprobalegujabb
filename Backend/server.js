@@ -167,13 +167,70 @@ app.post('/api/meals', async (req, res) => {
 // -------------------- ÉTKEZÉS TÖRLÉSE --------------------
 app.delete('/api/meals/:mealId', async (req, res) => {
     const { mealId } = req.params;
-    const { userId } = req.query; // vagy a body-ból, de egyszerűbb query param
     if (!mealId) return res.status(400).json({ error: 'Hiányzó azonosító!' });
     try {
         await pool.query('DELETE FROM nutrition_logs WHERE id = ?', [mealId]);
         res.json({ success: true, message: 'Étkezés törölve!' });
     } catch (error) {
         console.error(error);
+        res.status(500).json({ error: 'Szerverhiba!' });
+    }
+});
+
+// -------------------- FEJLŐDÉS FOTÓK (Progress photos) --------------------
+app.get('/api/progress/:userId', async (req, res) => {
+    const { userId } = req.params;
+    if (!userId) return res.status(400).json({ error: 'Hiányzó felhasználó azonosító!' });
+    try {
+        const [rows] = await pool.query('SELECT id, user_id as userId, image_base64 as imageBase64, note, weight_kg as weightKg, record_date as recordDate, created_at as createdAt, updated_at as updatedAt FROM progress_photos WHERE user_id = ? ORDER BY record_date DESC, created_at DESC', [userId]);
+        return res.status(200).json({ success: true, progress: rows });
+    } catch (error) {
+        console.error('Hiba progress lekérésekor:', error);
+        return res.status(500).json({ error: 'Szerverhiba!' });
+    }
+});
+
+app.post('/api/progress', async (req, res) => {
+    const { userId, imageBase64, note, weightKg, recordDate } = req.body;
+    if (!userId || !imageBase64 || !recordDate) {
+        return res.status(400).json({ error: 'userId, imageBase64 és recordDate szükséges!' });
+    }
+    try {
+        const [result] = await pool.query(
+            'INSERT INTO progress_photos (user_id, image_base64, note, weight_kg, record_date) VALUES (?, ?, ?, ?, ?)',
+            [userId, imageBase64, note || null, weightKg || null, recordDate]
+        );
+        res.status(201).json({ success: true, id: result.insertId });
+    } catch (error) {
+        console.error('Hiba progress mentésekor:', error);
+        res.status(500).json({ error: 'Szerverhiba!' });
+    }
+});
+
+app.put('/api/progress/:id', async (req, res) => {
+    const { id } = req.params;
+    const { note, weightKg, recordDate } = req.body;
+    if (!id) return res.status(400).json({ error: 'Hiányzó azonosító!' });
+    try {
+        await pool.query(
+            'UPDATE progress_photos SET note = COALESCE(?, note), weight_kg = COALESCE(?, weight_kg), record_date = COALESCE(?, record_date), updated_at = CURRENT_TIMESTAMP WHERE id = ?',
+            [note || null, weightKg || null, recordDate || null, id]
+        );
+        res.json({ success: true, message: 'Progresszió frissítve!' });
+    } catch (error) {
+        console.error('Hiba progress frissítésekor:', error);
+        res.status(500).json({ error: 'Szerverhiba!' });
+    }
+});
+
+app.delete('/api/progress/:id', async (req, res) => {
+    const { id } = req.params;
+    if (!id) return res.status(400).json({ error: 'Hiányzó azonosító!' });
+    try {
+        await pool.query('DELETE FROM progress_photos WHERE id = ?', [id]);
+        res.json({ success: true, message: 'Progresszió kép törölve!' });
+    } catch (error) {
+        console.error('Hiba progress törlésekor:', error);
         res.status(500).json({ error: 'Szerverhiba!' });
     }
 });

@@ -267,6 +267,9 @@ const Dashboard = ({ navigateTo, handleLogout }) => {
   // Szerkesztéshez
   const [editingWorkoutId, setEditingWorkoutId] = useState(null);
   
+  // Fejlődés fotók
+  const [progressPhotos, setProgressPhotos] = useState([]);
+  
   // Sötét mód
   const [darkMode, setDarkMode] = useState(() => {
     const saved = localStorage.getItem('powerplan_dark_mode');
@@ -350,6 +353,7 @@ const Dashboard = ({ navigateTo, handleLogout }) => {
         loadUserData(currentUser.id, token);
         loadDashboardData(currentUser.id, token);
         loadProfileImage(currentUser.id, token);
+        loadProgressPhotos(currentUser.id, token);
       }
     } else {
       if (navigateTo) navigateTo('home');
@@ -408,6 +412,28 @@ const Dashboard = ({ navigateTo, handleLogout }) => {
         }
       }
     } catch (error) { console.error(error); }
+  };
+
+  const loadProgressPhotos = async (userId, token) => {
+    try {
+      const response = await fetch(`http://localhost:5001/api/progress/${userId}`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (response.ok) {
+        const data = await response.json();
+        if (data.success && data.progress) {
+          const formattedPhotos = data.progress.map(photo => ({
+            id: photo.id,
+            image: photo.imageBase64,
+            date: new Date(photo.recordDate).toLocaleDateString('hu-HU'),
+            note: photo.note || '',
+            isPhotoSaved: true,
+            isNoteSaved: true
+          }));
+          setProgressPhotos(formattedPhotos);
+        }
+      }
+    } catch (error) { console.error('Hiba progress fotók betöltésekor:', error); }
   };
 
   const loadWeekWorkouts = async (date) => {
@@ -537,6 +563,149 @@ const Dashboard = ({ navigateTo, handleLogout }) => {
       }
     };
     reader.readAsDataURL(file);
+  };
+
+  // Fejlődés fotó feltöltés
+  const handleProgressPhotoUpload = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      const newPhoto = {
+        id: Date.now(),
+        image: reader.result,
+        date: new Date().toLocaleDateString('hu-HU'),
+        note: '',
+        isPhotoSaved: false,
+        isNoteSaved: false
+      };
+      setProgressPhotos(prev => [newPhoto, ...prev]);
+      showToast('Fotó feltöltve, mentsd külön a mentés gombbal!', 'success');
+    };
+    reader.readAsDataURL(file);
+  };
+
+  // Fotó mentése külön gombbal
+  const saveProgressPhoto = async (photoId) => {
+    const currentUser = JSON.parse(localStorage.getItem('powerplan_current_user') || '{}');
+    const token = localStorage.getItem('powerplan_token');
+    if (!currentUser.id || currentUser.id === 'demo-999') {
+      showToast('Demó módban nem menthető!', 'error');
+      return;
+    }
+
+    const photo = progressPhotos.find(p => p.id === photoId);
+    if (!photo) return;
+
+    try {
+      const response = await fetch('http://localhost:5001/api/progress', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          userId: currentUser.id,
+          imageBase64: photo.image,
+          note: photo.note || null,
+          recordDate: new Date().toISOString().split('T')[0] // YYYY-MM-DD
+        })
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        // Frissítjük a fotót, hogy mentett legyen és új ID-t kapjon
+        const updatedPhotos = progressPhotos.map(p =>
+          p.id === photoId ? { ...p, id: data.id, isPhotoSaved: true, isNoteSaved: true } : p
+        );
+        setProgressPhotos(updatedPhotos);
+        showToast('Fotó sikeresen mentve az adatbázisba!', 'success');
+      } else {
+        showToast('Hiba a fotó mentésekor!', 'error');
+      }
+    } catch (error) {
+      console.error('API hiba:', error);
+      showToast('Hálózati hiba!', 'error');
+    }
+  };
+
+  // Megjegyzés módosítása (késői mentéshez)
+  const updateProgressNote = (photoId, note) => {
+    const updatedPhotos = progressPhotos.map(photo =>
+      photo.id === photoId ? { ...photo, note, isNoteSaved: false } : photo
+    );
+    setProgressPhotos(updatedPhotos);
+  };
+
+  // Megjegyzés mentése külön gombbal
+  const saveProgressNote = async (photoId) => {
+    const currentUser = JSON.parse(localStorage.getItem('powerplan_current_user') || '{}');
+    const token = localStorage.getItem('powerplan_token');
+    if (!currentUser.id || currentUser.id === 'demo-999') {
+      showToast('Demó módban nem menthető!', 'error');
+      return;
+    }
+
+    const photo = progressPhotos.find(p => p.id === photoId);
+    if (!photo) return;
+
+    try {
+      const response = await fetch(`http://localhost:5001/api/progress/${photoId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          note: photo.note || null
+        })
+      });
+
+      if (response.ok) {
+        const updatedPhotos = progressPhotos.map(p =>
+          p.id === photoId ? { ...p, isNoteSaved: true } : p
+        );
+        setProgressPhotos(updatedPhotos);
+        showToast('Megjegyzés elmentve!', 'success');
+      } else {
+        showToast('Hiba a megjegyzés mentésekor!', 'error');
+      }
+    } catch (error) {
+      console.error('API hiba:', error);
+      showToast('Hálózati hiba!', 'error');
+    }
+  };
+
+  // Fejlődés fotó törlése
+  const deleteProgressPhoto = async (photoId) => {
+    if (window.confirm('Biztosan törölni szeretnéd ezt a fotót?')) {
+      const currentUser = JSON.parse(localStorage.getItem('powerplan_current_user') || '{}');
+      const token = localStorage.getItem('powerplan_token');
+      
+      // Ha már mentve van az adatbázisban, küldjük a DELETE kérést
+      if (progressPhotos.find(p => p.id === photoId)?.isPhotoSaved) {
+        try {
+          const response = await fetch(`http://localhost:5001/api/progress/${photoId}`, {
+            method: 'DELETE',
+            headers: { 'Authorization': `Bearer ${token}` }
+          });
+          if (!response.ok) {
+            showToast('Hiba a fotó törlésekor!', 'error');
+            return;
+          }
+        } catch (error) {
+          console.error('API hiba:', error);
+          showToast('Hálózati hiba!', 'error');
+          return;
+        }
+      }
+      
+      // Eltávolítjuk a state-ből
+      const updatedPhotos = progressPhotos.filter(photo => photo.id !== photoId);
+      setProgressPhotos(updatedPhotos);
+      showToast('Fotó sikeresen törölve!', 'success');
+    }
   };
 
   // Profil mentés (backend)
@@ -904,6 +1073,7 @@ const Dashboard = ({ navigateTo, handleLogout }) => {
     'workout-plan': { icon: 'fa-dumbbell', text: 'Edzésterv', subtitle: 'Heti edzésterv' },
     'workout-mode': { icon: 'fa-play-circle', text: 'Edzés mód', subtitle: 'Aktív edzés' },
     'progress': { icon: 'fa-chart-line', text: 'Haladás', subtitle: 'Statisztikák' },
+    'fejlodes': { icon: 'fa-camera', text: 'Fejlődés', subtitle: 'Testfotók és megjegyzések' },
     'nutrition': { icon: 'fa-utensils', text: 'Táplálkozás', subtitle: 'Kalóriakövetés' },
     'gyms': { icon: 'fa-map-marker-alt', text: 'Edzőtermek', subtitle: 'Közeli termek' },
     'exercises': { icon: 'fa-video', text: 'Gyakorlatok', subtitle: 'Oktatóvideók' },
@@ -1067,6 +1237,69 @@ const Dashboard = ({ navigateTo, handleLogout }) => {
                 <Line data={weightChartData} options={chartOptions} />
               </div>
             </div>
+          </div>
+        </div>
+
+        {/* FEJLŐDÉS SECTION */}
+        <div className={`content-section ${currentSection === 'fejlodes' ? 'active' : ''}`}>
+          <div className="card">
+            <div className="section-header">
+              <h2><i className="fas fa-camera"></i> Fejlődés</h2>
+              <input type="file" accept="image/*" onChange={handleProgressPhotoUpload} id="progress-photo-input" style={{ display: 'none' }} />
+              <button className="btn btn-primary" onClick={() => document.getElementById('progress-photo-input').click()}>
+                <i className="fas fa-plus"></i> Fotó feltöltés
+              </button>
+            </div>
+            
+            {progressPhotos.length === 0 ? (
+              <div className="no-data-message">
+                <i className="fas fa-image"></i>
+                <p>Még nincsenek feltöltött fotók</p>
+                <p className="subtitle">Kattints a "Fotó feltöltés" gombra, hogy hozzáadj egy képet!</p>
+              </div>
+            ) : (
+              <div className="progress-photos-grid">
+                {progressPhotos.map((photo) => (
+                  <div key={photo.id} className="progress-photo-card">
+                    <div className="photo-image-container">
+                      <img src={photo.image} alt="Fejlődés fotó" className="progress-photo-img" />
+                      <button className="delete-meal-btn" onClick={() => deleteProgressPhoto(photo.id)} title="Kép törlése">🗑️</button>
+                    </div>
+                    <div className="photo-date">
+                      {photo.date}
+                      <button
+                        className={`btn btn-secondary btn-sm ${photo.isPhotoSaved ? 'saved' : ''}`}
+                        onClick={() => saveProgressPhoto(photo.id)}
+                        disabled={photo.isPhotoSaved}
+                        style={{ marginLeft: '12px' }}
+                      >
+                        {photo.isPhotoSaved ? 'Mentve' : 'Kép mentése'}
+                      </button>
+                    </div>
+                    <div className="photo-note-section">
+                      <label>Megjegyzés:</label>
+                      <textarea 
+                        className="photo-note-input"
+                        placeholder="pl. itt 78kg voltam..."
+                        value={photo.note}
+                        onChange={(e) => updateProgressNote(photo.id, e.target.value)}
+                        maxLength="200"
+                      />
+                      <div className="note-cta-row">
+                        <span className="note-char-count">{photo.note.length}/200</span>
+                        <button
+                          className={`btn btn-secondary btn-sm ${photo.isNoteSaved ? 'saved' : ''}`}
+                          onClick={() => saveProgressNote(photo.id)}
+                          disabled={photo.isNoteSaved}
+                        >
+                          {photo.isNoteSaved ? 'Mentve' : 'Megjegyzés mentése'}
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         </div>
 

@@ -426,6 +426,26 @@ body.dark-mode .modal-close:hover {
   color: white;
 }
 
+.btn-sm {
+  padding: 6px 12px;
+  font-size: 0.77rem;
+  border-radius: 8px;
+}
+
+.note-cta-row {
+  margin-top: 8px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.btn-secondary.saved,
+.note-cta-row .btn-secondary.saved {
+  background: #2a9d8f;
+  color: white;
+  border-color: transparent;
+}
+
 /* Stats Grid */
 .stats-grid {
   display: grid;
@@ -1673,5 +1693,202 @@ body.dark-mode .sets-table td {
   animation: slideOut 0.3s ease forwards;
 }
 
+/* Fejlődés fotók */
+.progress-photos-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 20px;
+  margin-top: 20px;
+}
+
+.progress-photo-card {
+  background: var(--light);
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.progress-photo-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+}
+
+.photo-image-container {
+  position: relative;
+  width: 100%;
+  padding-bottom: 100%;
+  overflow: hidden;
+  background: #f0f0f0;
+}
+
+.progress-photo-img {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.delete-photo-btn {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: rgba(230, 57, 70, 0.2);
+  color: #e63946;
+  border: none;
+  border-radius: 15px;
+  min-width: 34px;
+  height: 28px;
+  padding: 0 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: transform 0.2s ease, background 0.2s ease;
+  font-size: 0.85rem;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.12);
+}
+
+.delete-photo-btn:hover {
+  background: rgba(230, 57, 70, 0.6);
+  color: white;
+  transform: translateY(-1px) scale(1.02);
+}
+
+.progress-photo-card:hover .delete-meal-btn {
+  box-shadow: 0 3px 10px rgba(0,0,0,0.18);
+}
+
+.progress-photo-card .delete-meal-btn {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  min-width: 34px;
+  height: 28px;
+  border-radius: 15px;
+  background: rgba(230,57,70,0.2);
+  color: #e63946;
+  padding: 0 8px;
+  font-size: 0.9rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 5;
+}
+
+.progress-photo-card .delete-meal-btn:hover {
+  background: rgba(230,57,70,0.6);
+  color: white;
+  transform: translateY(-1px) scale(1.03);
+  box-shadow: 0 3px 10px rgba(0,0,0,0.18);
+}
+
+.progress-photo-card .delete-meal-btn:hover {
+  background: rgba(230,57,70,0.6);
+  color: white;
+  transform: translateY(-1px) scale(1.03);
+  box-shadow: 0 3px 10px rgba(0,0,0,0.18);
+}
+
+.photo-date {
+  padding: 12px;
+  font-size: 0.85rem;
+  color: var(--gray);
+  border-bottom: 1px solid rgba(0,0,0,0.08);
+  font-weight: 500;
+}
+
+.photo-note-section {
+  padding: 12px;
+}
+
+.photo-note-section label {
+  display: block;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 8px;
+  font-size: 0.85rem;
+}
+
+.photo-note-input {
+  width: 100%;
+  min-height: 80px;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  background: var(--card-bg);
+  color: var(--text);
+  font-family: inherit;
+  font-size: 0.85rem;
+  resize: vertical;
+  transition: border-color 0.3s;
+}
+
+.photo-note-input:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(230, 57, 70, 0.1);
+}
+
+.note-char-count {
+  text-align: right;
+  font-size: 0.75rem;
+  color: var(--gray);
+  margin-top: 4px;
+}
+
+.no-data-message {
+  text-align: center;
+  padding: 30px;
+  color: var(--gray);
+  background: var(--light);
+  border: 1px solid rgba(0,0,0,0.08);
+  border-radius: 12px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+}
+
+.no-data-message i {
+  font-size: 3.5rem;
+  color: rgba(0,0,0,0.35);
+  margin-bottom: 12px;
+  display: block;
+}
+
+.no-data-message p {
+  margin: 8px 0;
+}
+
+.no-data-message .subtitle {
+  font-size: 0.85rem;
+  color: #aaa;
+  margin-top: 10px;
+}
+
+/* Sötét mód - Progress fotók */
+body.dark-mode .progress-photo-card {
+  background: var(--card-bg);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+}
+
+body.dark-mode .photo-date {
+  border-bottom-color: rgba(255,255,255,0.1);
+}
+
+body.dark-mode .photo-note-input {
+  background: var(--card-bg);
+  border-color: rgba(255,255,255,0.2);
+}
+
+body.dark-mode .photo-note-input:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(230, 57, 70, 0.2);
+}
+
+body.dark-mode .progress-photos-grid,
+body.dark-mode .no-data-message {
+  color: var(--text);
+}
 
 
