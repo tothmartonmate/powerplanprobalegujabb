@@ -4,5 +4,8 @@
   "description": "Rendszer indító szkript",
   "scripts": {
     "start": "node indito.js"
+  },
+  "dependencies": {
+    "leaflet": "^1.9.4"
   }
 }

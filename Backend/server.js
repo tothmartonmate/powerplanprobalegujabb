@@ -22,6 +22,7 @@ pool.getConnection()
     .then((connection) => { console.log('✅ Sikeresen csatlakozva a MySQL adatbázishoz!'); connection.release(); })
     .catch((err) => console.error('❌ Hiba az adatbázis csatlakozáskor:', err.message));
 
+// -------------------- REGISZTRÁCIÓ --------------------
 app.post('/api/register', async (req, res) => {
     const { full_name, email, password, fitnessGoal } = req.body;
     if (!full_name || !email || !password) return res.status(400).json({ error: 'Minden mező kötelező!' });
@@ -34,6 +35,7 @@ app.post('/api/register', async (req, res) => {
     } catch (error) { res.status(500).json({ error: 'Szerverhiba történt!' }); }
 });
 
+// -------------------- BEJELENTKEZÉS --------------------
 app.post('/api/login', async (req, res) => {
     const { email, password } = req.body;
     try {
@@ -46,6 +48,7 @@ app.post('/api/login', async (req, res) => {
     } catch (error) { res.status(500).json({ error: 'Szerverhiba!' }); }
 });
 
+// -------------------- KÉRDŐÍV MENTÉSE --------------------
 app.post('/api/questionnaire', async (req, res) => {
     const { userId, questionnaire: q } = req.body;
     if (!userId || !q) return res.status(400).json({ error: 'Hiányzó adatok!' });
@@ -74,6 +77,7 @@ app.post('/api/questionnaire', async (req, res) => {
     } catch (error) { res.status(500).json({ error: 'Szerverhiba!' }); }
 });
 
+// -------------------- KÉRDŐÍV LEKÉRÉSE --------------------
 app.get('/api/questionnaire/:userId', async (req, res) => {
     try {
         const [rows] = await pool.query('SELECT * FROM user_questionnaires WHERE user_id = ?', [req.params.userId]);
@@ -83,13 +87,11 @@ app.get('/api/questionnaire/:userId', async (req, res) => {
     } catch (error) { res.status(500).json({ error: 'Szerverhiba!' }); }
 });
 
-// DASHBOARD - Csoportosított edzéstervekkel
+// -------------------- DASHBOARD --------------------
 app.get('/api/dashboard/:userId', async (req, res) => {
     const userId = req.params.userId;
     try {
-        const [meals] = await pool.query(`SELECT meal_type, food_name as name, description, calories, protein_g as protein, carbs_g as carbs, fat_g as fat, DATE_FORMAT(consumed_date, '%H:%M') as time FROM nutrition_logs WHERE user_id = ? AND consumed_date = CURDATE()`, [userId]);
-        
-        // Lekérjük az edzéseket és gyakorlatokat
+        const [meals] = await pool.query(`SELECT meal_type, food_name as name, description, calories, protein_g as protein, carbs_g as carbs, fat_g as fat, DATE_FORMAT(consumed_date, '%H:%i') as time FROM nutrition_logs WHERE user_id = ? AND consumed_date = CURDATE()`, [userId]);
         const [workoutRows] = await pool.query(
             `SELECT w.id as workout_id, w.name as workout_name, w.workout_type, w.scheduled_day, e.id as ex_id, e.muscle_group, e.exercise_name, e.sets_data 
              FROM workouts w 
@@ -97,8 +99,6 @@ app.get('/api/dashboard/:userId', async (req, res) => {
              WHERE w.user_id = ?`, 
             [userId]
         );
-        
-        // Csoportosítjuk az adatokat a React számára
         const groupedWorkouts = {};
         workoutRows.forEach(row => {
             if (!groupedWorkouts[row.workout_id]) {
@@ -112,12 +112,10 @@ app.get('/api/dashboard/:userId', async (req, res) => {
                 });
             }
         });
-
         const [userStats] = await pool.query(`SELECT total_points, current_level FROM users WHERE id = ?`, [userId]);
         const [qRows] = await pool.query('SELECT main_goal, allergies FROM user_questionnaires WHERE user_id = ?', [userId]);
         let recommendedMeals = [];
         let recommendedWorkoutText = 'Töltsd ki a kérdőívet a személyre szabott ajánlásokért!';
-
         if (qRows.length > 0) {
             const goal = qRows[0].main_goal;
             const allergies = qRows[0].allergies ? qRows[0].allergies.toLowerCase() : '';
@@ -135,7 +133,6 @@ app.get('/api/dashboard/:userId', async (req, res) => {
                 recommendedMeals.push({ name: '🌟 Laktózmentes Turmix', cals: 200, desc: 'Laktózérzékenyeknek!' });
             }
         }
-
         res.json({
             success: true,
             nutrition: { todayMeals: meals, dailyCalories: meals.reduce((sum, meal) => sum + meal.calories, 0), macros: { protein: 0, carbs: 0, fat: 0 }, recommendations: recommendedMeals },
@@ -145,6 +142,7 @@ app.get('/api/dashboard/:userId', async (req, res) => {
     } catch (error) { res.status(500).json({ success: false }); }
 });
 
+// -------------------- ÉTKEZÉS NAPLÓZÁSA --------------------
 app.post('/api/meals', async (req, res) => {
     const { userId, mealType, foodName, description, calories } = req.body;
     if (!userId || !mealType || !foodName || !calories) return res.status(400).json({ error: 'Hiányzó adatok!' });
@@ -154,33 +152,26 @@ app.post('/api/meals', async (req, res) => {
     } catch (error) { res.status(500).json({ error: 'Szerverhiba!' }); }
 });
 
-// JAVÍTOTT: TÖBB GYAKORLAT MENTÉSE EGY EDZÉSNAPON BELÜL
+// -------------------- EDZÉS MENTÉSE --------------------
 app.post('/api/workouts', async (req, res) => {
     const { userId, name, workoutType, scheduledDay, exercises } = req.body;
-    
     if (!userId || !name || !workoutType || !scheduledDay || !exercises || exercises.length === 0) {
         return res.status(400).json({ error: 'Minden adat és legalább egy gyakorlat megadása kötelező!' });
     }
-
     const connection = await pool.getConnection();
     try {
         await connection.beginTransaction();
-        
-        // 1. Edzésnap mentése
         const [wResult] = await connection.query(
             'INSERT INTO workouts (user_id, name, workout_type, scheduled_day) VALUES (?, ?, ?, ?)',
             [userId, name, workoutType, scheduledDay]
         );
         const workoutId = wResult.insertId;
-
-        // 2. Végigmegyünk a kapott gyakorlatok tömbjén, és mindet bementjük
         for (let ex of exercises) {
             await connection.query(
                 'INSERT INTO workout_exercises (workout_id, muscle_group, exercise_name, sets_data) VALUES (?, ?, ?, ?)',
                 [workoutId, ex.muscleGroup, ex.name, JSON.stringify(ex.sets)]
             );
         }
-
         await connection.commit();
         res.status(201).json({ success: true, message: 'Teljes edzésterv elmentve!' });
     } catch (error) {
@@ -192,5 +183,79 @@ app.post('/api/workouts', async (req, res) => {
     }
 });
 
+// -------------------- HETI EDZÉSEK LEKÉRÉSE --------------------
+app.get('/api/workouts/:userId/week', async (req, res) => {
+    const { userId } = req.params;
+    const { startDate, endDate } = req.query;
+    if (!startDate || !endDate) {
+        return res.status(400).json({ error: 'Start date and end date required' });
+    }
+    try {
+        const [columns] = await pool.query(`SHOW COLUMNS FROM workouts LIKE 'created_at'`);
+        if (columns.length === 0) {
+            await pool.query(`ALTER TABLE workouts ADD COLUMN created_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP`);
+            console.log('✅ Hozzáadva a created_at oszlop a workouts táblához');
+        }
+        const [workouts] = await pool.query(
+            `SELECT w.*, 
+                COALESCE(
+                    JSON_ARRAYAGG(
+                        JSON_OBJECT(
+                            'id', we.id,
+                            'muscleGroup', we.muscle_group,
+                            'name', we.exercise_name,
+                            'sets', we.sets_data,
+                            'sortOrder', we.sort_order
+                        )
+                    ), '[]'
+                ) as exercises
+             FROM workouts w
+             LEFT JOIN workout_exercises we ON w.id = we.workout_id
+             WHERE w.user_id = ? 
+               AND DATE(w.created_at) BETWEEN ? AND ?
+             GROUP BY w.id
+             ORDER BY w.scheduled_day, w.created_at`,
+            [userId, startDate, endDate]
+        );
+        const parsedWorkouts = workouts.map(w => ({
+            ...w,
+            exercises: w.exercises && w.exercises !== '[]' ? JSON.parse(w.exercises).map(ex => ({
+                ...ex,
+                sets: typeof ex.sets === 'string' ? JSON.parse(ex.sets) : ex.sets
+            })) : []
+        }));
+        res.json({ success: true, workouts: parsedWorkouts });
+    } catch (error) {
+        console.error('Hiba a heti edzések lekérésekor:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+app.put('/api/workouts/:workoutId', async (req, res) => {
+    const { workoutId } = req.params;
+    const { name, workoutType, scheduledDay, exercises } = req.body;
+    if (!name || !workoutType || !scheduledDay || !exercises || exercises.length === 0) {
+        return res.status(400).json({ error: 'Minden mező kitöltése kötelező!' });
+    }
+    const connection = await pool.getConnection();
+    try {
+        await connection.beginTransaction();
+        await connection.query(`UPDATE workouts SET name = ?, workout_type = ?, scheduled_day = ? WHERE id = ?`, [name, workoutType, scheduledDay, workoutId]);
+        await connection.query(`DELETE FROM workout_exercises WHERE workout_id = ?`, [workoutId]);
+        for (let ex of exercises) {
+            await connection.query(`INSERT INTO workout_exercises (workout_id, muscle_group, exercise_name, sets_data, sort_order) VALUES (?, ?, ?, ?, ?)`, [workoutId, ex.muscleGroup, ex.name, JSON.stringify(ex.sets), ex.sortOrder || 0]);
+        }
+        await connection.commit();
+        res.json({ success: true, message: 'Edzés sikeresen frissítve!' });
+    } catch (error) {
+        await connection.rollback();
+        console.error('Hiba a frissítéskor:', error);
+        res.status(500).json({ error: 'Szerverhiba frissítés közben!' });
+    } finally {
+        connection.release();
+    }
+});
+
+// -------------------- SZERVER INDÍTÁSA --------------------
 const PORT = process.env.PORT || 5001;
 app.listen(PORT, '0.0.0.0', () => { console.log(`🚀 Szerver fut a ${PORT}-es porton`); });
