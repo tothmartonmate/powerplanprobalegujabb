@@ -1105,10 +1105,6 @@ const Dashboard = ({ navigateTo, handleLogout }) => {
               <span>{sectionTitles[section].text}</span>
             </div>
           ))}
-          <div className="nav-item" onClick={() => setDarkMode(!darkMode)}>
-            <i className={`fas ${darkMode ? 'fa-sun' : 'fa-moon'}`}></i>
-            <span>{darkMode ? 'Világos mód' : 'Sötét mód'}</span>
-          </div>
         </div>
         <button className="logout-btn" onClick={logout}><i className="fas fa-sign-out-alt"></i><span>Kijelentkezés</span></button>
       </div>
@@ -1119,7 +1115,12 @@ const Dashboard = ({ navigateTo, handleLogout }) => {
             <h1><i className={`fas ${sectionTitles[currentSection]?.icon}`}></i><span>{sectionTitles[currentSection]?.text}</span></h1>
             <p>{sectionTitles[currentSection]?.subtitle}</p>
           </div>
-          <div className="top-actions"><div className="date-time" id="currentDateTime"></div></div>
+          <div className="top-actions">
+            <div className="date-time" id="currentDateTime"></div>
+            <button className="theme-toggle-btn" onClick={() => setDarkMode(!darkMode)} title={darkMode ? 'Világos mód' : 'Sötét mód'}>
+              <i className={`fas ${darkMode ? 'fa-sun' : 'fa-moon'}`}></i>
+            </button>
+          </div>
         </div>
 
         {/* DASHBOARD SECTION */}

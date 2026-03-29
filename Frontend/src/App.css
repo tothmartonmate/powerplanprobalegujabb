@@ -433,8 +433,8 @@ nav .logo span {
 
 /* Lábléc */
 footer {
-  background-color: var(--dark);
-  color: white;
+  background-color: #f1faee;
+  color: #1a1a2e;
   padding: 3rem 5%;
 }
 

@@ -275,7 +275,7 @@ function App() {
         </div>
       </section>
 
-      <footer>
+      <footer style={{ display: currentPage === 'dashboard' ? 'none' : 'block' }}>
         <div className="footer-content">
           <div className="footer-column">
             <h3>Power Plan</h3>
