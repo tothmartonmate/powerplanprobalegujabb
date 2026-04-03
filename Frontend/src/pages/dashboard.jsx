@@ -360,6 +360,23 @@ const Dashboard = ({ navigateTo, handleLogout }) => {
     }
   }, []);
 
+  const formatDateForInput = (date) => {
+    if (!date) return '';
+    const parsed = typeof date === 'string' ? new Date(date) : date;
+    if (Number.isNaN(parsed.getTime())) return '';
+    const year = parsed.getFullYear();
+    const month = `${parsed.getMonth() + 1}`.padStart(2, '0');
+    const day = `${parsed.getDate()}`.padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
+
+  const normalizeNumberInput = (value) => {
+    if (value === undefined || value === null || value === '') return '';
+    const normalized = typeof value === 'string' ? value.replace(',', '.') : value;
+    const number = parseFloat(normalized);
+    return Number.isNaN(number) ? '' : number;
+  };
+
   const loadUserData = async (userId, token) => {
     try {
       const response = await fetch(`http://localhost:5001/api/questionnaire/${userId}`, { 
@@ -377,7 +394,7 @@ const Dashboard = ({ navigateTo, handleLogout }) => {
             ...prev,
             height: data.questionnaire.personalInfo?.height || '',
             weight: data.questionnaire.personalInfo?.weight || '',
-            birthDate: data.questionnaire.personalInfo?.birthDate || ''
+            birthDate: formatDateForInput(data.questionnaire.personalInfo?.birthDate || '')
           }));
         }
       }
@@ -717,6 +734,10 @@ const Dashboard = ({ navigateTo, handleLogout }) => {
       return;
     }
     try {
+      const formattedHeight = normalizeNumberInput(editFormData.height);
+      const formattedWeight = normalizeNumberInput(editFormData.weight);
+      const formattedBirthDate = formatDateForInput(editFormData.birthDate);
+
       const response = await fetch('http://localhost:5001/api/update-profile', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
@@ -724,9 +745,9 @@ const Dashboard = ({ navigateTo, handleLogout }) => {
           userId: currentUser.id,
           fullName: editFormData.fullName,
           email: editFormData.email,
-          height: editFormData.height,
-          weight: editFormData.weight,
-          birthDate: editFormData.birthDate
+          height: formattedHeight,
+          weight: formattedWeight,
+          birthDate: formattedBirthDate
         })
       });
       if (response.ok) {
@@ -752,6 +773,7 @@ const Dashboard = ({ navigateTo, handleLogout }) => {
     if (!birthDate) return '-';
     const today = new Date();
     const birth = new Date(birthDate);
+    if (Number.isNaN(birth.getTime())) return '-';
     let age = today.getFullYear() - birth.getFullYear();
     const m = today.getMonth() - birth.getMonth();
     if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) age--;
