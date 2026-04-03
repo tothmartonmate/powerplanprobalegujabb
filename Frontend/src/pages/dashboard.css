@@ -202,10 +202,19 @@ body.dark-mode .modal-close:hover {
   text-align: center;
   margin-bottom: 40px;
   display: block;
+  color: var(--primary);
+}
+
+.sidebar .logo i {
+  color: var(--primary);
 }
 
 .sidebar .logo span {
-  color: var(--primary);
+  color: #ffffff;
+}
+
+body.dark-mode .sidebar .logo span {
+  color: var(--dark);
 }
 
 .menu-toggle {

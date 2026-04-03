@@ -1122,7 +1122,7 @@ const Dashboard = ({ navigateTo, handleLogout }) => {
       {/* Sidebar */}
       <div className={`sidebar ${sidebarActive ? 'active' : ''}`}>
         <button className="menu-toggle" onClick={toggleSidebar}><i className="fas fa-bars"></i></button>
-        <div className="logo"><i className="fas fa-dumbbell"></i><span>PowerPlan</span></div>
+        <div className="logo"><i className="fas fa-dumbbell" style={{marginRight: '8px'}}></i>Power<span>Plan</span></div>
         <div className="user-profile">
           <div className="profile-pic" onClick={() => navigateToSection('profile')}>
             {profileImage ? (

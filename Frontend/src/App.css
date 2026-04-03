@@ -81,8 +81,12 @@ nav .logo {
   margin-right: auto; /* HOZZÁADVA: Ez tolja a logót teljesen balra, a menüt pedig jobbra! */
 }
 
+nav .logo i {
+  color: var(--primary);
+}
+
 nav .logo span {
-  color: var(--dark);
+  color: #ffffff;
 }
 
 /* Hero szekció */
