@@ -155,6 +155,10 @@ const safeFitBounds = (map, bounds, fallbackToHungary = true) => {
   }
 };
 
+const getAuthHeaders = (token) => (token ? { Authorization: `Bearer ${token}` } : {});
+
+const getProfileImageStorageKey = (userId) => `powerplan_profile_image_${userId}`;
+
 const getMarkerPosition = (gym, duplicateIndex) => {
   const angle = (duplicateIndex % 6) * (Math.PI / 3);
   const ring = Math.floor(duplicateIndex / 6) + 1;
@@ -645,9 +649,7 @@ const Dashboard = ({ navigateTo, handleLogout, requestLogout, darkMode, setDarkM
   };
   
   // Profil adatok
-  const [profileImage, setProfileImage] = useState(() => {
-    return localStorage.getItem('powerplan_profile_image') || null;
-  });
+  const [profileImage, setProfileImage] = useState(null);
   const [editingProfile, setEditingProfile] = useState(false);
   const [editFormData, setEditFormData] = useState({
     fullName: '',
@@ -703,6 +705,41 @@ const Dashboard = ({ navigateTo, handleLogout, requestLogout, darkMode, setDarkM
     { id: 1, muscleGroup: '', name: '', sets: [{ weight: '', reps: '', rpe: '' }] }
   ]);
 
+  const hydrateProfileFromQuestionnaire = (questionnaire) => {
+    if (!questionnaire) return;
+
+    setUserData((prev) => ({
+      ...prev,
+      ...questionnaire,
+      email: questionnaire.email || prev.email || '',
+      personalInfo: {
+        ...prev.personalInfo,
+        ...questionnaire.personalInfo
+      },
+      goals: {
+        ...prev.goals,
+        ...questionnaire.goals
+      },
+      preferences: {
+        ...prev.preferences,
+        ...questionnaire.preferences
+      },
+      nutrition: {
+        ...prev.nutrition,
+        ...questionnaire.nutrition
+      }
+    }));
+
+    setEditFormData((prev) => ({
+      ...prev,
+      fullName: `${questionnaire.personalInfo?.lastName || prev.fullName.split(' ')[0] || ''} ${questionnaire.personalInfo?.firstName || prev.fullName.split(' ').slice(1).join(' ') || ''}`.trim() || prev.fullName,
+      email: questionnaire.email || prev.email,
+      height: questionnaire.personalInfo?.height || '',
+      weight: questionnaire.personalInfo?.weight || '',
+      birthDate: formatDateForInput(questionnaire.personalInfo?.birthDate || '')
+    }));
+  };
+
   // Adatok betöltése
   useEffect(() => {
     const token = localStorage.getItem('powerplan_token');
@@ -722,7 +759,19 @@ const Dashboard = ({ navigateTo, handleLogout, requestLogout, darkMode, setDarkM
         email: currentUser.email || ''
       }));
 
-      if (currentUser.id && token && currentUser.id !== 'demo-999') {
+      const savedQuestionnaire = localStorage.getItem('powerplan_questionnaire');
+      if (savedQuestionnaire) {
+        try {
+          hydrateProfileFromQuestionnaire(JSON.parse(savedQuestionnaire));
+        } catch (error) {
+          console.warn('Nem sikerült beolvasni a helyi kérdőívet:', error);
+        }
+      }
+
+      const cachedProfileImage = localStorage.getItem(getProfileImageStorageKey(currentUser.id));
+      setProfileImage(cachedProfileImage || null);
+
+      if (currentUser.id && currentUser.id !== 'demo-999') {
         loadUserData(currentUser.id, token);
         loadDashboardData(currentUser.id, token);
         loadNutritionWeek(new Date());
@@ -754,40 +803,13 @@ const Dashboard = ({ navigateTo, handleLogout, requestLogout, darkMode, setDarkM
   const loadUserData = async (userId, token) => {
     try {
       const response = await fetch(`http://localhost:5001/api/questionnaire/${userId}`, { 
-        headers: { 'Authorization': `Bearer ${token}` } 
+        headers: getAuthHeaders(token)
       });
       if (response.ok) {
         const data = await response.json();
         if (data && data.questionnaire) {
-          setUserData(prev => ({
-            ...prev,
-            ...data.questionnaire,
-            email: data.questionnaire.email || prev.email || '',
-            personalInfo: {
-              ...prev.personalInfo,
-              ...data.questionnaire.personalInfo
-            },
-            goals: {
-              ...prev.goals,
-              ...data.questionnaire.goals
-            },
-            preferences: {
-              ...prev.preferences,
-              ...data.questionnaire.preferences
-            },
-            nutrition: {
-              ...prev.nutrition,
-              ...data.questionnaire.nutrition
-            }
-          }));
-          setEditFormData(prev => ({
-            ...prev,
-            fullName: `${data.questionnaire.personalInfo?.lastName || prev.fullName.split(' ')[0] || ''} ${data.questionnaire.personalInfo?.firstName || prev.fullName.split(' ').slice(1).join(' ') || ''}`.trim() || prev.fullName,
-            email: data.questionnaire.email || prev.email,
-            height: data.questionnaire.personalInfo?.height || '',
-            weight: data.questionnaire.personalInfo?.weight || '',
-            birthDate: formatDateForInput(data.questionnaire.personalInfo?.birthDate || '')
-          }));
+          hydrateProfileFromQuestionnaire(data.questionnaire);
+          localStorage.setItem('powerplan_questionnaire', JSON.stringify(data.questionnaire));
         }
       }
     } catch (error) { console.error(error); }
@@ -796,7 +818,7 @@ const Dashboard = ({ navigateTo, handleLogout, requestLogout, darkMode, setDarkM
   const loadDashboardData = async (userId, token) => {
     try {
       const response = await fetch(`http://localhost:5001/api/dashboard/${userId}`, { 
-        headers: { 'Authorization': `Bearer ${token}` } 
+        headers: getAuthHeaders(token)
       });
       if (response.ok) {
         const data = await response.json();
@@ -812,13 +834,16 @@ const Dashboard = ({ navigateTo, handleLogout, requestLogout, darkMode, setDarkM
   const loadProfileImage = async (userId, token) => {
     try {
       const response = await fetch(`http://localhost:5001/api/user-profile/${userId}`, {
-        headers: { 'Authorization': `Bearer ${token}` }
+        headers: getAuthHeaders(token)
       });
       if (response.ok) {
         const data = await response.json();
-        if (data.profileImage) {
-          setProfileImage(data.profileImage);
-          localStorage.setItem('powerplan_profile_image', data.profileImage);
+        const imageValue = data.profileImage || null;
+        setProfileImage(imageValue);
+        if (imageValue) {
+          localStorage.setItem(getProfileImageStorageKey(userId), imageValue);
+        } else {
+          localStorage.removeItem(getProfileImageStorageKey(userId));
         }
       }
     } catch (error) { console.error(error); }
@@ -832,7 +857,7 @@ const Dashboard = ({ navigateTo, handleLogout, requestLogout, darkMode, setDarkM
     try {
       const response = await fetch(
         `http://localhost:5001/api/nutrition/${currentUser.id}/week?date=${formatLocalDate(date)}`,
-        { headers: { 'Authorization': `Bearer ${token}` } }
+        { headers: getAuthHeaders(token) }
       );
 
       if (response.ok) {
@@ -850,7 +875,7 @@ const Dashboard = ({ navigateTo, handleLogout, requestLogout, darkMode, setDarkM
   const loadProgressPhotos = async (userId, token) => {
     try {
       const response = await fetch(`http://localhost:5001/api/progress/${userId}`, {
-        headers: { 'Authorization': `Bearer ${token}` }
+        headers: getAuthHeaders(token)
       });
       if (response.ok) {
         const data = await response.json();
@@ -890,7 +915,7 @@ const Dashboard = ({ navigateTo, handleLogout, requestLogout, darkMode, setDarkM
     try {
       const response = await fetch(
         `http://localhost:5001/api/workouts/${currentUser.id}/week?startDate=${startStr}&endDate=${endStr}`, 
-        { headers: { 'Authorization': `Bearer ${token}` } }
+        { headers: getAuthHeaders(token) }
       );
       if (response.ok) {
         const data = await response.json();
@@ -1007,7 +1032,7 @@ const Dashboard = ({ navigateTo, handleLogout, requestLogout, darkMode, setDarkM
     reader.onloadend = async () => {
       const base64 = reader.result;
       setProfileImage(base64);
-      localStorage.setItem('powerplan_profile_image', base64);
+      localStorage.setItem(getProfileImageStorageKey(currentUser.id), base64);
       
       try {
         const response = await fetch('http://localhost:5001/api/upload-profile-image', {
@@ -1204,8 +1229,30 @@ const Dashboard = ({ navigateTo, handleLogout, requestLogout, darkMode, setDarkM
         localStorage.setItem('powerplan_current_user', JSON.stringify(savedUser));
         setUserData(prev => ({
           ...prev,
-          personalInfo: { ...prev.personalInfo, height: editFormData.height, weight: editFormData.weight, birthDate: editFormData.birthDate }
+          email: editFormData.email,
+          personalInfo: {
+            ...prev.personalInfo,
+            firstName: editFormData.fullName.split(' ').slice(1).join(' '),
+            lastName: editFormData.fullName.split(' ')[0] || '',
+            height: editFormData.height,
+            weight: editFormData.weight,
+            birthDate: editFormData.birthDate
+          }
         }));
+        const savedQuestionnaire = JSON.parse(localStorage.getItem('powerplan_questionnaire') || '{}');
+        const updatedQuestionnaire = {
+          ...savedQuestionnaire,
+          email: editFormData.email,
+          personalInfo: {
+            ...(savedQuestionnaire.personalInfo || {}),
+            firstName: editFormData.fullName.split(' ').slice(1).join(' '),
+            lastName: editFormData.fullName.split(' ')[0] || '',
+            height: editFormData.height,
+            weight: editFormData.weight,
+            birthDate: editFormData.birthDate
+          }
+        };
+        localStorage.setItem('powerplan_questionnaire', JSON.stringify(updatedQuestionnaire));
         // Frissítjük a dashboard adatokat, hogy az új súlynapló megjelenjen a grafikonon
         loadDashboardData(currentUser.id, token);
       } else {

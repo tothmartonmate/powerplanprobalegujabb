@@ -162,6 +162,7 @@ function App() {
     localStorage.removeItem('powerplan_current_user');
     localStorage.removeItem('powerplan_user_logged_in');
     localStorage.removeItem('powerplan_remember_me');
+    localStorage.removeItem('powerplan_profile_image');
     setIsLoggedIn(false);
     navigateTo('home');
   };
