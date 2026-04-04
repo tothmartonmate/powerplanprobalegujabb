@@ -80,42 +80,41 @@ export const CITY_COORDINATES = {
   Keszthely: [46.7681, 17.2511]
 };
 
-const createGym = (name, countyKey, cityKey, rank) => {
+const createGym = (name, countyKey, cityKey, rank, mapQuery) => {
   const [lat, lng] = CITY_COORDINATES[cityKey];
   const countyLabel = COUNTY_OPTIONS.find((county) => county.key === countyKey)?.label || countyKey;
+  const cityLabel = cityKey
+    .replace('Kecskemet', 'Kecskemét')
+    .replace('Pecs', 'Pécs')
+    .replace('Bekescsaba', 'Békéscsaba')
+    .replace('Szekesfehervar', 'Székesfehérvár')
+    .replace('Gyor', 'Győr')
+    .replace('Gyongyos', 'Gyöngyös')
+    .replace('Jaszbereny', 'Jászberény')
+    .replace('Komarom', 'Komárom')
+    .replace('Batoryterenye', 'Bátonyterenye')
+    .replace('Erd', 'Érd')
+    .replace('Godollo', 'Gödöllő')
+    .replace('Kaposvar', 'Kaposvár')
+    .replace('Nyiregyhaza', 'Nyíregyháza')
+    .replace('Szekszard', 'Szekszárd')
+    .replace('Sarvar', 'Sárvár')
+    .replace('Veszprem', 'Veszprém')
+    .replace('Balatonfured', 'Balatonfüred')
+    .replace('Heviz', 'Hévíz')
+    .replace('Ozd', 'Ózd')
+    .replace('Kormend', 'Körmend');
   return {
     name,
     countyKey,
     countyLabel,
     cityKey,
-    cityLabel: cityKey
-      .replace('Kecskemet', 'Kecskemét')
-      .replace('Pecs', 'Pécs')
-      .replace('Bekescsaba', 'Békéscsaba')
-      .replace('Szekesfehervar', 'Székesfehérvár')
-      .replace('Gyor', 'Győr')
-      .replace('Gyongyos', 'Gyöngyös')
-      .replace('Jaszbereny', 'Jászberény')
-      .replace('Komarom', 'Komárom')
-      .replace('Batoryterenye', 'Bátonyterenye')
-      .replace('Erd', 'Érd')
-      .replace('Godollo', 'Gödöllő')
-      .replace('Kaposvar', 'Kaposvár')
-      .replace('Nyiregyhaza', 'Nyíregyháza')
-      .replace('Szekszard', 'Szekszárd')
-      .replace('Sarvar', 'Sárvár')
-      .replace('Veszprem', 'Veszprém')
-      .replace('Balatonfured', 'Balatonfüred')
-      .replace('Zalaegerszeg', 'Zalaegerszeg')
-      .replace('Heviz', 'Hévíz')
-      .replace('Ozd', 'Ózd')
-      .replace('Kormend', 'Körmend')
-      .replace('Nagykanizsa', 'Nagykanizsa')
-      .replace('Keszthely', 'Keszthely'),
-    address: `${CITY_COORDINATES[cityKey] ? '' : ''}${cityKey}, ${countyLabel}`,
+    cityLabel,
+    address: `${cityLabel}, ${countyLabel}`,
     lat,
     lng,
-    rank
+    rank,
+    mapQuery: mapQuery || `${name} ${cityLabel}`
   };
 };
 

@@ -198,30 +198,88 @@ const EXERCISE_DB_WITH_VIDEOS = {
     { name: 'Fekvenyomás (Kézisúlyzó)', video: 'https://www.youtube.com/embed/VmB1G1K7v94', difficulty: 'beginner' },
     { name: 'Ferde pados nyomás', video: 'https://www.youtube.com/embed/0G2_XV3kHjM', difficulty: 'intermediate' },
     { name: 'Tárogatás', video: 'https://www.youtube.com/embed/Z57CtMZmK9k', difficulty: 'beginner' },
-    { name: 'Kábelkereszt', video: 'https://www.youtube.com/embed/taI4XduLpTk', difficulty: 'advanced' }
+    { name: 'Kábelkereszt', video: 'https://www.youtube.com/embed/taI4XduLpTk', difficulty: 'advanced' },
+    { name: 'Ferde pados kézisúlyzós nyomás', video: 'https://www.youtube.com/embed/8iPEnn-ltC8', difficulty: 'intermediate' },
+    { name: 'Tolódzkodás mellre döntve', video: 'https://www.youtube.com/embed/2z8JmcrW-As', difficulty: 'advanced' },
+    { name: 'Hammer Strength mellnyomás', video: 'https://www.youtube.com/embed/sqNwDkUU_Ps', difficulty: 'beginner' },
+    { name: 'Pec deck', video: 'https://www.youtube.com/embed/eozdVDA78K0', difficulty: 'beginner' },
+    { name: 'Fekvőtámasz', video: 'https://www.youtube.com/embed/IODxDxX7oi4', difficulty: 'beginner' }
   ],
   'Hát': [
     { name: 'Húzódzkodás', video: 'https://www.youtube.com/embed/eGo4IYlbE5g', difficulty: 'intermediate' },
     { name: 'Lehúzás csigán', video: 'https://www.youtube.com/embed/CAwf7n6Luuc', difficulty: 'beginner' },
-    { name: 'Felhúzás (Deadlift)', video: 'https://www.youtube.com/embed/op9kVnSso6Q', difficulty: 'advanced' }
+    { name: 'Felhúzás (Deadlift)', video: 'https://www.youtube.com/embed/op9kVnSso6Q', difficulty: 'advanced' },
+    { name: 'Döntött törzsű evezés rúddal', video: 'https://www.youtube.com/embed/vT2GjY_Umpw', difficulty: 'intermediate' },
+    { name: 'Evezés csigán', video: 'https://www.youtube.com/embed/GZbfZ033f74', difficulty: 'beginner' },
+    { name: 'Egykezes evezés kézisúlyzóval', video: 'https://www.youtube.com/embed/pYcpY20QaE8', difficulty: 'beginner' },
+    { name: 'T-rudas evezés', video: 'https://www.youtube.com/embed/j3Igk5nyZE4', difficulty: 'advanced' },
+    { name: 'Straight-arm lehúzás', video: 'https://www.youtube.com/embed/ajCCGN2tU3Q', difficulty: 'beginner' },
+    { name: 'Fordított pec deck', video: 'https://www.youtube.com/embed/EA7u4Q_8HQ0', difficulty: 'beginner' },
+    { name: 'Rack pull', video: 'https://www.youtube.com/embed/ZlRrIsoDpKg', difficulty: 'advanced' },
+    { name: 'Gumiszalagos lehúzás', video: 'https://www.youtube.com/embed/Se6jM9YkRkQ', difficulty: 'beginner' }
   ],
   'Láb': [
     { name: 'Guggolás', video: 'https://www.youtube.com/embed/Ua6C4jQvP7M', difficulty: 'intermediate' },
-    { name: 'Lábnyomás', video: 'https://www.youtube.com/embed/IxLZ0YimtK0', difficulty: 'beginner' }
+    { name: 'Lábnyomás', video: 'https://www.youtube.com/embed/IxLZ0YimtK0', difficulty: 'beginner' },
+    { name: 'Bolgár guggolás', video: 'https://www.youtube.com/embed/2C-uNgKwPLE', difficulty: 'intermediate' },
+    { name: 'Combfeszítő', video: 'https://www.youtube.com/embed/YyvSfVjQeL0', difficulty: 'beginner' },
+    { name: 'Combhajlító gép', video: 'https://www.youtube.com/embed/1Tq3QdYUuHs', difficulty: 'beginner' },
+    { name: 'Román felhúzás', video: 'https://www.youtube.com/embed/2SHsk9AzdjA', difficulty: 'intermediate' },
+    { name: 'Kitörés', video: 'https://www.youtube.com/embed/QOVaHwm-Q6U', difficulty: 'beginner' },
+    { name: 'Hack guggolás', video: 'https://www.youtube.com/embed/0tn5K9NlCfo', difficulty: 'intermediate' },
+    { name: 'Csípőemelés rúddal', video: 'https://www.youtube.com/embed/LM8XHLYJoYs', difficulty: 'intermediate' },
+    { name: 'Álló vádliemelés', video: 'https://www.youtube.com/embed/-M4-G8p8fmc', difficulty: 'beginner' },
+    { name: 'Sissy guggolás', video: 'https://www.youtube.com/embed/7S0NjKYlJ7o', difficulty: 'advanced' }
   ],
   'Váll': [
     { name: 'Vállból nyomás', video: 'https://www.youtube.com/embed/2yjwXTZQDDI', difficulty: 'intermediate' },
-    { name: 'Oldalemelés', video: 'https://www.youtube.com/embed/3VcKaXpzqRo', difficulty: 'beginner' }
+    { name: 'Oldalemelés', video: 'https://www.youtube.com/embed/3VcKaXpzqRo', difficulty: 'beginner' },
+    { name: 'Arnold nyomás', video: 'https://www.youtube.com/embed/6Z15_WdXmVw', difficulty: 'intermediate' },
+    { name: 'Előreemelés tárcsával', video: 'https://www.youtube.com/embed/-t7fuZ0KhDA', difficulty: 'beginner' },
+    { name: 'Hátsóváll döntött oldalemelés', video: 'https://www.youtube.com/embed/ttvfGg9d76c', difficulty: 'beginner' },
+    { name: 'Face pull', video: 'https://www.youtube.com/embed/rep-qVOkqgk', difficulty: 'beginner' },
+    { name: 'Katonai nyomás', video: 'https://www.youtube.com/embed/B-aVuyhvLHU', difficulty: 'advanced' },
+    { name: 'Upright row', video: 'https://www.youtube.com/embed/jaAV-rD45I0', difficulty: 'intermediate' },
+    { name: 'Kábel oldalemelés', video: 'https://www.youtube.com/embed/XPPfnSEATJA', difficulty: 'beginner' },
+    { name: 'Gépi vállnyomás', video: 'https://www.youtube.com/embed/WvLMauqrnK8', difficulty: 'beginner' },
+    { name: 'Fordított tárogatás', video: 'https://www.youtube.com/embed/JoCRRZ3zRt0', difficulty: 'beginner' }
   ],
   'Bicepsz': [
-    { name: 'Bicepsz karhajlítás rúddal', video: 'https://www.youtube.com/embed/ykJmrZ5v0Oo', difficulty: 'beginner' }
+    { name: 'Bicepsz karhajlítás rúddal', video: 'https://www.youtube.com/embed/ykJmrZ5v0Oo', difficulty: 'beginner' },
+    { name: 'Kalapács bicepsz', video: 'https://www.youtube.com/embed/zC3nLlEvin4', difficulty: 'beginner' },
+    { name: 'Koncentrált bicepsz', video: 'https://www.youtube.com/embed/0AUGkch3tzc', difficulty: 'intermediate' },
+    { name: 'Scott pad bicepsz', video: 'https://www.youtube.com/embed/fIWP-FRFNU0', difficulty: 'intermediate' },
+    { name: 'Kábeles bicepsz hajlítás', video: 'https://www.youtube.com/embed/twD-YGVP4Bk', difficulty: 'beginner' },
+    { name: 'Váltott karos bicepsz kézisúlyzóval', video: 'https://www.youtube.com/embed/sAq_ocpRh_I', difficulty: 'beginner' },
+    { name: 'Fordított fogású bicepsz', video: 'https://www.youtube.com/embed/nRgxYX2Ve9w', difficulty: 'intermediate' },
+    { name: 'Ferde padon bicepsz', video: 'https://www.youtube.com/embed/soxrZlIl35U', difficulty: 'intermediate' },
+    { name: 'Spider curl', video: 'https://www.youtube.com/embed/gc36D5qT7N4', difficulty: 'advanced' },
+    { name: 'Preacher machine bicepsz', video: 'https://www.youtube.com/embed/mgEW0Yj3H4Q', difficulty: 'beginner' }
   ],
   'Tricepsz': [
-    { name: 'Tricepsz letolás csigán', video: 'https://www.youtube.com/embed/vB5OI2CYLFQ', difficulty: 'beginner' }
+    { name: 'Tricepsz letolás csigán', video: 'https://www.youtube.com/embed/vB5OI2CYLFQ', difficulty: 'beginner' },
+    { name: 'Letolás francia rúddal', video: 'https://www.youtube.com/embed/d_KZxkY_0cM', difficulty: 'intermediate' },
+    { name: 'Koponyazúzó', video: 'https://www.youtube.com/embed/d_KZxkY_0cM', difficulty: 'intermediate' },
+    { name: 'Tricepsz nyújtás fej fölött kötéllel', video: 'https://www.youtube.com/embed/_gsUck-7M74', difficulty: 'beginner' },
+    { name: 'Szűk fekvenyomás', video: 'https://www.youtube.com/embed/nEF0bv2FW94', difficulty: 'advanced' },
+    { name: 'Tolódzkodás tricepszre', video: 'https://www.youtube.com/embed/0326dy_-CzM', difficulty: 'intermediate' },
+    { name: 'Lórúgás', video: 'https://www.youtube.com/embed/6SS6K3lAwZ8', difficulty: 'beginner' },
+    { name: 'Egykezes fej fölötti tricepsz nyújtás', video: 'https://www.youtube.com/embed/-Vyt2QdsR7E', difficulty: 'beginner' },
+    { name: 'Fordított fogású letolás', video: 'https://www.youtube.com/embed/kiuVA0gs3EI', difficulty: 'beginner' },
+    { name: 'Padon tolódzkodás', video: 'https://www.youtube.com/embed/6kALZikXxLc', difficulty: 'beginner' }
   ],
   'Has': [
     { name: 'Hasprés', video: 'https://www.youtube.com/embed/9Pp5fXF7I9c', difficulty: 'beginner' },
-    { name: 'Plank', video: 'https://www.youtube.com/embed/pSHjTRCQxIw', difficulty: 'beginner' }
+    { name: 'Plank', video: 'https://www.youtube.com/embed/pSHjTRCQxIw', difficulty: 'beginner' },
+    { name: 'Lábemelés fekve', video: 'https://www.youtube.com/embed/JB2oyawG9KI', difficulty: 'beginner' },
+    { name: 'Függeszkedéses lábemelés', video: 'https://www.youtube.com/embed/Pr1ieGZ5atk', difficulty: 'intermediate' },
+    { name: 'Orosz twist', video: 'https://www.youtube.com/embed/wkD8rjkodUI', difficulty: 'beginner' },
+    { name: 'Biciklis hasprés', video: 'https://www.youtube.com/embed/9FGilxCbdz8', difficulty: 'beginner' },
+    { name: 'Haskerék', video: 'https://www.youtube.com/embed/A3uK5TPzHq8', difficulty: 'advanced' },
+    { name: 'Dead bug', video: 'https://www.youtube.com/embed/g_BYB0R-4Ws', difficulty: 'beginner' },
+    { name: 'Mountain climber', video: 'https://www.youtube.com/embed/nmwgirgXLYM', difficulty: 'beginner' },
+    { name: 'Fordított hasprés', video: 'https://www.youtube.com/embed/hyv14e2QDq0', difficulty: 'beginner' },
+    { name: 'Oldalsó plank', video: 'https://www.youtube.com/embed/K2VljzCC16g', difficulty: 'beginner' }
   ]
 };
 
@@ -365,14 +423,16 @@ const WeekCalendar = ({ selectedDate, onDateChange, onWeekChange }) => {
 const GymMap = ({ isActive }) => {
   const [mapMode, setMapMode] = useState('country');
   const [nearbyCenter, setNearbyCenter] = useState(null);
+  const [visibleGyms, setVisibleGyms] = useState(ALL_GYMS);
   const [mapMessage, setMapMessage] = useState(`Az országos nézet mind a ${ALL_GYMS.length} rögzített edzőtermet egyszerre mutatja Magyarország térképén.`);
   const mapElementRef = useRef(null);
   const leafletMapRef = useRef(null);
   const markerLayerRef = useRef(null);
 
   const openGoogleMaps = () => {
-    if (mapMode === 'nearby' && nearbyCenter) {
-      window.open(`https://www.google.com/maps/search/${encodeURIComponent('edzőterem')}/@${nearbyCenter.lat},${nearbyCenter.lng},13z`, '_blank');
+    const primaryGym = visibleGyms[0];
+    if (primaryGym) {
+      window.open(`https://www.google.com/maps/search/${encodeURIComponent(primaryGym.mapQuery || `${primaryGym.name} ${primaryGym.cityLabel}`)}`, '_blank');
       return;
     }
 
@@ -469,6 +529,7 @@ const GymMap = ({ isActive }) => {
       : gymsToRender;
 
     const finalGyms = fallbackNearbyGyms;
+    setVisibleGyms(finalGyms);
     const duplicateCounts = {};
     const markerBounds = [];
 
@@ -492,7 +553,7 @@ const GymMap = ({ isActive }) => {
           <p><strong>Vármegye:</strong> ${gym.countyLabel}</p>
           <p><strong>Város:</strong> ${gym.cityLabel}</p>
           ${distanceLine}
-          <a href="https://www.google.com/maps/search/${encodeURIComponent(`${gym.name} ${gym.cityLabel}`)}" target="_blank" rel="noreferrer">Megnyitás Google Mapsben</a>
+          <a href="https://www.google.com/maps/search/${encodeURIComponent(gym.mapQuery || `${gym.name} ${gym.cityLabel}`)}" target="_blank" rel="noreferrer">Megnyitás Google Mapsben</a>
         </div>
       `);
 
@@ -683,6 +744,8 @@ const Dashboard = ({ navigateTo, handleLogout, requestLogout, darkMode, setDarkM
   const [showDeleteMealModal, setShowDeleteMealModal] = useState(false);
   const [workoutToDelete, setWorkoutToDelete] = useState(null);
   const [showDeleteWorkoutModal, setShowDeleteWorkoutModal] = useState(false);
+  const [progressPhotoToDelete, setProgressPhotoToDelete] = useState(null);
+  const [showDeleteProgressPhotoModal, setShowDeleteProgressPhotoModal] = useState(false);
   
   // Edzés részletek modalhoz
   const [selectedWorkout, setSelectedWorkout] = useState(null);
@@ -728,11 +791,12 @@ const Dashboard = ({ navigateTo, handleLogout, requestLogout, darkMode, setDarkM
   
   const [userData, setUserData] = useState({});
   const [workoutData, setWorkoutData] = useState({ weeklyPlan: [], stats: {}, aiRecommendation: '', recommendedPlan: [], recommendationNote: '' });
-  const [nutritionData, setNutritionData] = useState({ todayMeals: [], dailyCalories: 0, recommendations: [], calorieTarget: 2500, recommendationNote: '' });
+  const [nutritionData, setNutritionData] = useState({ todayMeals: [], dailyCalories: 0, recommendations: [], calorieTarget: 2500, recommendationDate: '', recommendationNote: '' });
   const [nutritionWeekData, setNutritionWeekData] = useState({ dailyTotals: [], meals: [] });
   const [weightHistory, setWeightHistory] = useState([]);
   const [nutritionSelectedDate, setNutritionSelectedDate] = useState(new Date());
   const [currentDayKey, setCurrentDayKey] = useState(formatLocalDate(new Date()));
+  const [savingRecommendedMealKey, setSavingRecommendedMealKey] = useState('');
 
   const normalizedMealSearch = normalizeSearchText(mealSearchQuery.trim());
   const availableCategoryOptions = FOOD_CATEGORY_OPTIONS;
@@ -1350,34 +1414,40 @@ const Dashboard = ({ navigateTo, handleLogout, requestLogout, darkMode, setDarkM
   };
 
   // Fejlődés fotó törlése
+  const openDeleteProgressPhotoModal = (photo) => {
+    setProgressPhotoToDelete(photo);
+    setShowDeleteProgressPhotoModal(true);
+  };
+
+  const closeDeleteProgressPhotoModal = () => {
+    setProgressPhotoToDelete(null);
+    setShowDeleteProgressPhotoModal(false);
+  };
+
   const deleteProgressPhoto = async (photoId) => {
-    if (window.confirm('Biztosan törölni szeretnéd ezt a fotót?')) {
-      const currentUser = JSON.parse(localStorage.getItem('powerplan_current_user') || '{}');
-      const token = localStorage.getItem('powerplan_token');
-      
-      // Ha már mentve van az adatbázisban, küldjük a DELETE kérést
-      if (progressPhotos.find(p => p.id === photoId)?.isPhotoSaved) {
-        try {
-          const response = await fetch(`http://localhost:5001/api/progress/${photoId}`, {
-            method: 'DELETE',
-            headers: { 'Authorization': `Bearer ${token}` }
-          });
-          if (!response.ok) {
-            showToast('Hiba a fotó törlésekor!', 'error');
-            return;
-          }
-        } catch (error) {
-          console.error('API hiba:', error);
-          showToast('Hálózati hiba!', 'error');
+    const token = localStorage.getItem('powerplan_token');
+
+    if (progressPhotos.find(p => p.id === photoId)?.isPhotoSaved) {
+      try {
+        const response = await fetch(`http://localhost:5001/api/progress/${photoId}`, {
+          method: 'DELETE',
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (!response.ok) {
+          showToast('Hiba a fotó törlésekor!', 'error');
           return;
         }
+      } catch (error) {
+        console.error('API hiba:', error);
+        showToast('Hálózati hiba!', 'error');
+        return;
       }
-      
-      // Eltávolítjuk a state-ből
-      const updatedPhotos = progressPhotos.filter(photo => photo.id !== photoId);
-      setProgressPhotos(updatedPhotos);
-      showToast('Fotó sikeresen törölve!', 'success');
     }
+
+    const updatedPhotos = progressPhotos.filter(photo => photo.id !== photoId);
+    setProgressPhotos(updatedPhotos);
+    closeDeleteProgressPhotoModal();
+    showToast('Fotó sikeresen törölve!', 'success');
   };
 
   // Profil mentés (backend)
@@ -1522,6 +1592,70 @@ const Dashboard = ({ navigateTo, handleLogout, requestLogout, darkMode, setDarkM
       }
     } catch (error) { 
       showToast('Hiba a mentéskor!', 'error');
+    }
+  };
+
+  const handleAddRecommendedMeal = async (meal) => {
+    const currentUser = JSON.parse(localStorage.getItem('powerplan_current_user') || '{}');
+    const token = localStorage.getItem('powerplan_token');
+
+    if (!currentUser.id || currentUser.id === 'demo-999') {
+      showToast('Demó módban az adat mentése nem elérhető.', 'error');
+      return;
+    }
+
+    const mealType = String(meal?.meal_type || '').trim();
+    const foodName = String(meal?.name || '').trim();
+    const calories = Number(meal?.calories || 0);
+
+    if (!mealType || !foodName || calories <= 0) {
+      showToast('Az ajánlott étel adatai hiányosak, nem menthető.', 'error');
+      return;
+    }
+
+    const targetDate = nutritionData.recommendationDate
+      ? new Date(`${nutritionData.recommendationDate}T12:00:00`)
+      : new Date(nutritionSelectedDate);
+    const requestKey = `${mealType}-${foodName}`;
+
+    setSavingRecommendedMealKey(requestKey);
+
+    try {
+      const response = await fetch('http://localhost:5001/api/meals', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+        body: JSON.stringify({
+          userId: currentUser.id,
+          mealType,
+          foodName,
+          description: meal.description || 'Ajánlott napi étrendből hozzáadva.',
+          calories,
+          consumedDate: formatLocalDate(targetDate)
+        })
+      });
+
+      if (!response.ok) {
+        let errorMessage = 'Nem sikerült az ajánlott ételt hozzáadni.';
+        try {
+          const errorData = await response.json();
+          if (errorData?.error) {
+            errorMessage = errorData.error;
+          }
+        } catch {
+        }
+        showToast(errorMessage, 'error');
+        return;
+      }
+
+      setNutritionSelectedDate(targetDate);
+      showToast(`${foodName} hozzáadva az étkezéseidhez.`, 'success');
+      loadDashboardData(currentUser.id, token);
+      loadNutritionWeek(targetDate);
+    } catch (error) {
+      console.error('Recommended meal save error:', error);
+      showToast('Hálózati hiba az ajánlott étel mentésekor.', 'error');
+    } finally {
+      setSavingRecommendedMealKey('');
     }
   };
 
@@ -1696,11 +1830,20 @@ const Dashboard = ({ navigateTo, handleLogout, requestLogout, darkMode, setDarkM
         loadWeekWorkouts(selectedDate);
         setWorkoutFormDetails({ name: '', type: '', day: '' });
         setExercisesList([{ id: 1, muscleGroup: '', name: '', sets: [{ weight: '', reps: '', rpe: '' }] }]);
-      } else { 
-        showToast('Hiba a mentés során.', 'error');
+      } else {
+        let errorMessage = 'Hiba a mentés során.';
+        try {
+          const errorData = await response.json();
+          if (errorData?.error) {
+            errorMessage = errorData.error;
+          }
+        } catch {
+        }
+        showToast(errorMessage, 'error');
       }
-    } catch (error) { 
-      showToast('Hálózat hiba!', 'error');
+    } catch (error) {
+      console.error('Workout save network error:', error);
+      showToast('Hálózati hiba a mentéskor. Ellenőrizd, hogy fut-e a backend a 5001-es porton.', 'error');
     }
   };
 
@@ -2259,7 +2402,7 @@ const Dashboard = ({ navigateTo, handleLogout, requestLogout, darkMode, setDarkM
                   <div key={photo.id} className="progress-photo-card">
                     <div className="photo-image-container">
                       <img src={photo.image} alt="Fejlődés fotó" className="progress-photo-img" />
-                      <button className="delete-meal-btn" onClick={() => deleteProgressPhoto(photo.id)} title="Kép törlése">🗑️</button>
+                      <button className="delete-meal-btn" onClick={() => openDeleteProgressPhotoModal(photo)} title="Kép törlése">🗑️</button>
                     </div>
                     <div className="photo-date">
                       {photo.date}
@@ -2336,6 +2479,14 @@ const Dashboard = ({ navigateTo, handleLogout, requestLogout, darkMode, setDarkM
                         <div className="macro-label">Kcal</div>
                       </div>
                     </div>
+                    <button
+                      type="button"
+                      className="btn btn-primary btn-sm recommended-meal-action"
+                      onClick={() => handleAddRecommendedMeal(meal)}
+                      disabled={savingRecommendedMealKey === `${meal.meal_type}-${meal.name}`}
+                    >
+                      {savingRecommendedMealKey === `${meal.meal_type}-${meal.name}` ? 'Mentés...' : 'Beírás étkezésként'}
+                    </button>
                   </div>
                 ))}
                 {(nutritionData.recommendations || []).length === 0 && (
@@ -2836,6 +2987,23 @@ const Dashboard = ({ navigateTo, handleLogout, requestLogout, darkMode, setDarkM
           <div className="modal-buttons">
             <button type="button" className="btn btn-secondary" onClick={closeDeleteMealModal}>Mégse</button>
             <button type="button" className="btn btn-primary" onClick={() => deleteMeal(mealToDelete?.id)}>Törlés</button>
+          </div>
+        </div>
+      </div>
+
+      <div className={`modal modal-front ${showDeleteProgressPhotoModal ? 'active' : ''}`} onClick={(e) => {
+        if (e.target === e.currentTarget) closeDeleteProgressPhotoModal();
+      }}>
+        <div className="modal-content">
+          <div className="modal-header">
+            <h2><i className="fas fa-trash-alt"></i> Fotó törlése</h2>
+            <button className="modal-close" onClick={closeDeleteProgressPhotoModal}><i className="fas fa-times"></i></button>
+          </div>
+          <p>Biztosan törölni szeretnéd ezt a fejlődésfotót?</p>
+          <p><strong>{progressPhotoToDelete?.date || 'Kiválasztott fotó'}</strong></p>
+          <div className="modal-buttons">
+            <button type="button" className="btn btn-secondary" onClick={closeDeleteProgressPhotoModal}>Mégse</button>
+            <button type="button" className="btn btn-primary" onClick={() => deleteProgressPhoto(progressPhotoToDelete?.id)}>Törlés</button>
           </div>
         </div>
       </div>

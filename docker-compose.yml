@@ -42,7 +42,7 @@ services:
     depends_on:
       db:
         condition: service_healthy
-    command: sh -c "npm install && node --watch server.js"
+    command: sh -c "node --watch server.js"
 
   frontend:
     image: node:20

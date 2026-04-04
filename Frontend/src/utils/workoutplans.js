@@ -143,7 +143,7 @@ export const WORKOUT_PLANS = [
       monday: { name: "Mell + Tricepsz", exercises: ["Fekvenyomás (4x8)", "Ferde pados (4x10)", "Tárogatás (3x12)", "Tricepsz letolás (3x12)", "Koponyazúzó (3x10)"] },
       tuesday: { name: "Hát + Bicepsz", exercises: ["Húzódzkodás (4xmax)", "Evezés (4x10)", "Felhúzás (3x5)", "Bicepsz rúddal (3x10)", "Kalapács bicepsz (3x12)"] },
       wednesday: { name: "Láb + Váll", exercises: ["Guggolás (4x8)", "Lábnyomás (4x12)", "Kitörés (3x10)", "Vállból nyomás (4x10)", "Oldalemelés (3x12)"] },
-      thursday: { name: "Mell + Tricepsz (2)", exercises: ["Ferde pados (4x8)", "Kábelkereszt (3x12)", "Francia nyomás (3x10)", "Lórúgás (3x12)"] },
+      thursday: { name: "Mell + Tricepsz (2)", exercises: ["Ferde pados (4x8)", "Kábelkereszt (3x12)", "Letolás francia rúddal (3x10)", "Lórúgás (3x12)"] },
       friday: { name: "Hát + Bicepsz (2)", exercises: ["Lehúzás csigán (4x10)", "T-rudas evezés (4x10)", "Scott-pad (3x12)", "Koncentrált bicepsz (3x12)"] },
       saturday: { name: "Láb + Váll (2)", exercises: ["Felhúzás (3x5)", "Guggolás (3x8)", "Vállvonogatás (3x12)", "Előreemelés (3x12)"] }
     },

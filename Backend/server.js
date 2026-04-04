@@ -260,13 +260,6 @@ const withExercisePrescriptions = (goal, experienceLevel, exercises) => exercise
 }));
 
 const buildWorkoutRecommendation = ({ goal, experienceLevel, weeklyTrainingDays, trainingTypes, trainingLocation, preferredWeeklyFrequency, wantsWorkoutPlanRecommendation }) => {
-    if (wantsWorkoutPlanRecommendation === 'no') {
-        return {
-            recommendedPlan: [],
-            recommendationNote: 'A kérdőív alapján nem kértél edzésterv mintát.'
-        };
-    }
-
     const normalizedGoal = normalizeText(goal);
     const normalizedExperience = normalizeText(experienceLevel);
     const normalizedTrainingTypes = parseJsonArray(trainingTypes).map(normalizeText);
@@ -692,13 +685,22 @@ app.get('/api/dashboard/:userId', async (req, res) => {
             'SELECT main_goal, weight_kg, diet_types, allergies, wants_diet_recommendations, wants_workout_plan_recommendations, experience_level, weekly_training_days, training_types, training_location, preferred_weekly_frequency FROM user_questionnaires WHERE user_id = ?',
             [userId]
         );
+        const questionnaire = qRows[0] || null;
         let recommendedMeals = [];
         let dailyDietPlan = { recommendations: [], calorieTarget: 0, recommendationDate: '', recommendationDateLabel: '', recommendationNote: '' };
-        let workoutPlanRecommendation = { recommendedPlan: [], recommendationNote: '' };
-        let recommendedWorkoutText = 'Töltsd ki a kérdőívet a személyre szabott ajánlásokért!';
-        if (qRows.length > 0) {
-            const goal = qRows[0].main_goal;
-            const allergies = qRows[0].allergies ? qRows[0].allergies.toLowerCase() : '';
+        let workoutPlanRecommendation = buildWorkoutRecommendation({
+            goal: questionnaire?.main_goal || 'fitness',
+            experienceLevel: questionnaire?.experience_level || 'beginner',
+            weeklyTrainingDays: questionnaire?.weekly_training_days || '2',
+            trainingTypes: questionnaire?.training_types || JSON.stringify(['strength']),
+            trainingLocation: questionnaire?.training_location || 'gym',
+            preferredWeeklyFrequency: questionnaire?.preferred_weekly_frequency || questionnaire?.weekly_training_days || '2',
+            wantsWorkoutPlanRecommendation: questionnaire?.wants_workout_plan_recommendations || 'yes'
+        });
+        let recommendedWorkoutText = 'Heti 3x Teljes testes átmozgató edzés.';
+        if (questionnaire) {
+            const goal = questionnaire.main_goal;
+            const allergies = questionnaire.allergies ? questionnaire.allergies.toLowerCase() : '';
             if (goal === 'weightLoss') {
                 recommendedMeals.push({ name: 'Zabkása bogyós gyümölcsökkel', cals: 300, desc: 'Kiváló zsírégető reggeli.' }, { name: 'Grillezett csirkemell friss salátával', cals: 350, desc: 'Fehérjedús ebéd.' });
                 recommendedWorkoutText = 'Heti 3x Kardió (45 perc), plusz 2x könnyű súlyzós edzés.';
@@ -716,21 +718,13 @@ app.get('/api/dashboard/:userId', async (req, res) => {
             dailyDietPlan = buildDailyRecommendations({
                 userId,
                 goal,
-                weightKg: qRows[0].weight_kg,
-                dietTypes: qRows[0].diet_types,
-                allergies: qRows[0].allergies,
-                wantsDietRecommendations: qRows[0].wants_diet_recommendations
+                weightKg: questionnaire.weight_kg,
+                dietTypes: questionnaire.diet_types,
+                allergies: questionnaire.allergies,
+                wantsDietRecommendations: questionnaire.wants_diet_recommendations
             });
-
-            workoutPlanRecommendation = buildWorkoutRecommendation({
-                goal,
-                experienceLevel: qRows[0].experience_level,
-                weeklyTrainingDays: qRows[0].weekly_training_days,
-                trainingTypes: qRows[0].training_types,
-                trainingLocation: qRows[0].training_location,
-                preferredWeeklyFrequency: qRows[0].preferred_weekly_frequency,
-                wantsWorkoutPlanRecommendation: qRows[0].wants_workout_plan_recommendations
-            });
+        } else {
+            workoutPlanRecommendation.recommendationNote = 'A mintaedzésterv akkor is elérhető, ha még nem töltötted ki teljesen a kérdőívet.';
         }
         const [weightRows] = await pool.query(
             'SELECT weight_kg as weight, logged_at as date FROM weight_logs WHERE user_id = ? ORDER BY logged_at ASC, created_at ASC',

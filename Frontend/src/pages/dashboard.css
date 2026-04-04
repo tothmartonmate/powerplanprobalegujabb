@@ -976,6 +976,11 @@ body.dark-mode .theme-toggle-btn:hover {
   margin-bottom: 18px;
 }
 
+.nutrition-recommendation-plan .meal-card {
+  display: flex;
+  flex-direction: column;
+}
+
 .nutrition-summary-card strong {
   color: var(--dark);
   font-size: 1.35rem;
@@ -1133,6 +1138,16 @@ body.dark-mode .theme-toggle-btn:hover {
 
 .meal-card h4 {
   margin: 0 0 8px;
+}
+
+.recommended-meal-action {
+  margin-top: auto;
+  align-self: flex-start;
+}
+
+.recommended-meal-action:disabled {
+  opacity: 0.7;
+  cursor: wait;
 }
 
 .meal-description {
@@ -1909,8 +1924,10 @@ body.dark-mode .admin-panel-header span {
   height: 100%;
   background: rgba(0, 0, 0, 0.5);
   z-index: 2000;
-  align-items: center;
+  align-items: flex-start;
   justify-content: center;
+  overflow-y: auto;
+  padding: 20px 0;
 }
 
 .modal.active {
@@ -1929,6 +1946,7 @@ body.dark-mode .admin-panel-header span {
   width: 90%;
   max-height: 90vh;
   overflow-y: auto;
+  margin: 0 auto;
 }
 
 .modal-header {
