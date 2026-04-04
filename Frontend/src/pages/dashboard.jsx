@@ -118,6 +118,43 @@ const isWithinHungary = (lat, lng) => (
   lng <= HUNGARY_LNG_BOUNDS.max
 );
 
+const hasValidCoordinate = (value) => Number.isFinite(value) && !Number.isNaN(value);
+
+const isValidLatLng = (lat, lng) => hasValidCoordinate(lat) && hasValidCoordinate(lng);
+
+const hasRenderableMapSize = (map) => {
+  const container = map?.getContainer?.();
+  return Boolean(container && container.clientWidth > 0 && container.clientHeight > 0);
+};
+
+const safeSetHungaryView = (map) => {
+  map.setView(HUNGARY_CENTER, 7, { animate: false });
+};
+
+const safeFitBounds = (map, bounds, fallbackToHungary = true) => {
+  if (!map) return;
+
+  const normalizedBounds = Array.isArray(bounds)
+    ? bounds.filter((entry) => Array.isArray(entry) && isValidLatLng(entry[0], entry[1]))
+    : [];
+
+  if (!hasRenderableMapSize(map) || normalizedBounds.length === 0) {
+    if (fallbackToHungary) {
+      safeSetHungaryView(map);
+    }
+    return;
+  }
+
+  try {
+    map.fitBounds(normalizedBounds, { padding: [24, 24], animate: false });
+  } catch (error) {
+    console.warn('Térkép bounds hiba, fallback magyar nézetre:', error);
+    if (fallbackToHungary) {
+      safeSetHungaryView(map);
+    }
+  }
+};
+
 const getMarkerPosition = (gym, duplicateIndex) => {
   const angle = (duplicateIndex % 6) * (Math.PI / 3);
   const ring = Math.floor(duplicateIndex / 6) + 1;
@@ -319,7 +356,7 @@ const GymMap = ({ isActive }) => {
 
     window.requestAnimationFrame(() => {
       map.invalidateSize();
-      map.fitBounds(HUNGARY_BOUNDS, { padding: [12, 12], animate: false });
+      safeSetHungaryView(map);
     });
 
     return () => {
@@ -353,6 +390,10 @@ const GymMap = ({ isActive }) => {
     markerLayer.clearLayers();
 
     const gymsWithDistance = ALL_GYMS.map((gym) => {
+      if (!isValidLatLng(gym.lat, gym.lng)) {
+        return null;
+      }
+
       if (!nearbyCenter) {
         return { ...gym, distanceKm: null };
       }
@@ -361,7 +402,7 @@ const GymMap = ({ isActive }) => {
         ...gym,
         distanceKm: calculateDistanceKm(nearbyCenter.lat, nearbyCenter.lng, gym.lat, gym.lng)
       };
-    });
+    }).filter(Boolean);
 
     const gymsToRender = mapMode === 'nearby' && nearbyCenter
       ? gymsWithDistance
@@ -384,6 +425,7 @@ const GymMap = ({ isActive }) => {
       const duplicateIndex = duplicateCounts[gym.cityLabel] || 0;
       duplicateCounts[gym.cityLabel] = duplicateIndex + 1;
       const [markerLat, markerLng] = getMarkerPosition(gym, duplicateIndex);
+      if (!isValidLatLng(markerLat, markerLng)) return;
       const distanceLine = gym.distanceKm !== null ? `<p><strong>Távolság:</strong> ${formatDistance(gym.distanceKm)}</p>` : '';
       const marker = L.marker([markerLat, markerLng], { icon: gymMarkerIcon })
         .bindTooltip(gym.name, {
@@ -408,7 +450,8 @@ const GymMap = ({ isActive }) => {
     });
 
     if (mapMode === 'nearby' && nearbyCenter) {
-      L.circleMarker([nearbyCenter.lat, nearbyCenter.lng], {
+      if (isValidLatLng(nearbyCenter.lat, nearbyCenter.lng)) {
+        L.circleMarker([nearbyCenter.lat, nearbyCenter.lng], {
         radius: 8,
         weight: 3,
         color: '#0f4c5c',
@@ -425,7 +468,8 @@ const GymMap = ({ isActive }) => {
         .bindPopup('A jelenlegi helyzeted')
         .addTo(markerLayer);
 
-      markerBounds.push([nearbyCenter.lat, nearbyCenter.lng]);
+        markerBounds.push([nearbyCenter.lat, nearbyCenter.lng]);
+      }
     }
 
     if (mapMode === 'nearby' && nearbyCenter) {
@@ -439,13 +483,12 @@ const GymMap = ({ isActive }) => {
       setMapMessage(`Az országos nézet mind a ${ALL_GYMS.length} rögzített edzőtermet egyszerre mutatja Magyarország térképén.`);
     }
 
-    if (markerBounds.length > 0) {
-      map.fitBounds(markerBounds, { padding: [24, 24], animate: false });
-      if (mapMode === 'country') {
-        map.fitBounds(HUNGARY_BOUNDS, { padding: [12, 12], animate: false });
-      }
+    if (mapMode === 'country') {
+      safeSetHungaryView(map);
+    } else if (markerBounds.length > 0) {
+      safeFitBounds(map, markerBounds);
     } else {
-      map.fitBounds(HUNGARY_BOUNDS, { padding: [12, 12], animate: false });
+      safeSetHungaryView(map);
     }
 
     map.panInsideBounds(HUNGARY_BOUNDS, { animate: false });
@@ -467,6 +510,12 @@ const GymMap = ({ isActive }) => {
           lat: position.coords.latitude,
           lng: position.coords.longitude
         };
+
+        if (!isValidLatLng(center.lat, center.lng)) {
+          setMapMode('country');
+          setMapMessage('A helymeghatározás hibás koordinátát adott vissza, ezért az országos nézet maradt aktív.');
+          return;
+        }
 
         if (!isWithinHungary(center.lat, center.lng)) {
           setMapMode('country');
@@ -710,13 +759,31 @@ const Dashboard = ({ navigateTo, handleLogout, requestLogout, darkMode, setDarkM
       if (response.ok) {
         const data = await response.json();
         if (data && data.questionnaire) {
-          setUserData(prev => ({ 
-            ...data.questionnaire, 
-            ...prev, 
-            personalInfo: { ...data.questionnaire.personalInfo, ...prev.personalInfo } 
+          setUserData(prev => ({
+            ...prev,
+            ...data.questionnaire,
+            email: data.questionnaire.email || prev.email || '',
+            personalInfo: {
+              ...prev.personalInfo,
+              ...data.questionnaire.personalInfo
+            },
+            goals: {
+              ...prev.goals,
+              ...data.questionnaire.goals
+            },
+            preferences: {
+              ...prev.preferences,
+              ...data.questionnaire.preferences
+            },
+            nutrition: {
+              ...prev.nutrition,
+              ...data.questionnaire.nutrition
+            }
           }));
           setEditFormData(prev => ({
             ...prev,
+            fullName: `${data.questionnaire.personalInfo?.lastName || prev.fullName.split(' ')[0] || ''} ${data.questionnaire.personalInfo?.firstName || prev.fullName.split(' ').slice(1).join(' ') || ''}`.trim() || prev.fullName,
+            email: data.questionnaire.email || prev.email,
             height: data.questionnaire.personalInfo?.height || '',
             weight: data.questionnaire.personalInfo?.weight || '',
             birthDate: formatDateForInput(data.questionnaire.personalInfo?.birthDate || '')
@@ -1748,7 +1815,7 @@ const Dashboard = ({ navigateTo, handleLogout, requestLogout, darkMode, setDarkM
           <div className="card">
             <h2>Üdvözöljük, <span>{editFormData.fullName.split(' ')[0] || 'Felhasználó'}</span>!</h2>
             <div className="ai-box">
-              <h3><i className="fas fa-robot"></i> AI Ajánlás:</h3>
+              <h3><i className="fas fa-robot"></i> Ajánlás:</h3>
               <p>{workoutData.aiRecommendation || 'Töltsd ki a kérdőívet a személyre szabott tippekért!'}</p>
             </div>
           </div>

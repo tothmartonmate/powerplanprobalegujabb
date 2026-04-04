@@ -13,6 +13,15 @@ function App() {
   const [currentPage, setCurrentPage] = useState('home');
   const [showDemoModal, setShowDemoModal] = useState(false);
   const [showLogoutModal, setShowLogoutModal] = useState(false);
+  const [registrationDraft, setRegistrationDraft] = useState({
+    lastName: '',
+    firstName: '',
+    email: '',
+    password: '',
+    confirmPassword: '',
+    fitnessGoal: '',
+    termsAccepted: false
+  });
   const [darkMode, setDarkMode] = useState(() => {
     const saved = localStorage.getItem('powerplan_dark_mode');
     return saved !== null ? saved === 'true' : false;
@@ -287,7 +296,13 @@ function App() {
     </>
   );
 
-  const renderRegisztracioPage = () => <Regisztracio navigateTo={navigateTo} />;
+  const renderRegisztracioPage = () => (
+    <Regisztracio
+      navigateTo={navigateTo}
+      registrationDraft={registrationDraft}
+      setRegistrationDraft={setRegistrationDraft}
+    />
+  );
   const renderBejelentkezesPage = () => <Bejelentkezes navigateTo={navigateTo} setIsLoggedIn={setIsLoggedIn} />;
   const renderDashboardPage = () => (
     <Dashboard

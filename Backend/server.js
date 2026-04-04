@@ -23,6 +23,17 @@ pool.getConnection()
     .catch((err) => console.error('❌ Hiba az adatbázis csatlakozáskor:', err.message));
 
 let progressImageColumnPromise;
+const parseJsonArray = (value) => {
+    if (!value) return [];
+    if (Array.isArray(value)) return value;
+    try {
+        const parsed = JSON.parse(value);
+        return Array.isArray(parsed) ? parsed : [];
+    } catch {
+        return [];
+    }
+};
+
 const getProgressImageColumn = async () => {
     if (!progressImageColumnPromise) {
         progressImageColumnPromise = (async () => {
@@ -34,6 +45,19 @@ const getProgressImageColumn = async () => {
 };
 
 // -------------------- REGISZTRÁCIÓ --------------------
+app.get('/api/register/check-email', async (req, res) => {
+    const email = String(req.query.email || '').trim();
+    if (!email) return res.status(400).json({ error: 'Email szükséges!' });
+
+    try {
+        const [existing] = await pool.query('SELECT id FROM users WHERE email = ? LIMIT 1', [email]);
+        return res.status(200).json({ exists: existing.length > 0 });
+    } catch (error) {
+        console.error('Email ellenőrzési hiba:', error);
+        return res.status(500).json({ error: 'Szerverhiba történt!' });
+    }
+});
+
 app.post('/api/register', async (req, res) => {
     const { full_name, email, password, fitnessGoal } = req.body;
     if (!full_name || !email || !password) return res.status(400).json({ error: 'Minden mező kötelező!' });
@@ -121,10 +145,72 @@ app.post('/api/questionnaire', async (req, res) => {
 // -------------------- KÉRDŐÍV LEKÉRÉSE --------------------
 app.get('/api/questionnaire/:userId', async (req, res) => {
     try {
-        const [rows] = await pool.query('SELECT * FROM user_questionnaires WHERE user_id = ?', [req.params.userId]);
+        const [rows] = await pool.query(
+            `SELECT q.*, u.full_name, u.email
+             FROM user_questionnaires q
+             LEFT JOIN users u ON u.id = q.user_id
+             WHERE q.user_id = ?`,
+            [req.params.userId]
+        );
         if (rows.length === 0) return res.status(404).json({ message: 'Nincs kérdőív.' });
         const row = rows[0];
-        res.status(200).json({ success: true, questionnaire: { personalInfo: { height: row.height_cm, weight: row.weight_kg, birthDate: row.birth_date, firstName: '', lastName: '' }, goals: { mainGoal: row.main_goal }, preferences: { workoutTime: row.preferred_workout_duration_mins, preferredFrequency: row.preferred_weekly_frequency } } });
+        const nameParts = String(row.full_name || '').trim().split(/\s+/).filter(Boolean);
+        const firstName = nameParts.length > 1 ? nameParts.slice(1).join(' ') : '';
+        const lastName = nameParts[0] || '';
+
+        res.status(200).json({
+            success: true,
+            questionnaire: {
+                email: row.email || '',
+                personalInfo: {
+                    firstName,
+                    lastName,
+                    gender: row.gender || '',
+                    height: row.height_cm || '',
+                    weight: row.weight_kg || '',
+                    birthDate: row.birth_date || '',
+                    activity: row.activity_level || ''
+                },
+                trainingExperience: {
+                    frequency: row.experience_level || '',
+                    weeklyTraining: row.weekly_training_days || '',
+                    trainingTypes: parseJsonArray(row.training_types)
+                },
+                healthInfo: {
+                    currentInjury: row.current_injury || '',
+                    chronicConditions: parseJsonArray(row.chronic_conditions),
+                    medications: row.medications || ''
+                },
+                goals: {
+                    mainGoal: row.main_goal || '',
+                    timeframe: row.goal_timeframe || '',
+                    specificGoal: row.specific_goal || '',
+                    motivation: parseJsonArray(row.motivations)
+                },
+                lifestyle: {
+                    sleepHours: row.sleep_hours || '',
+                    stressLevel: row.stress_level || '',
+                    sittingTime: row.sitting_time || ''
+                },
+                nutrition: {
+                    diet: parseJsonArray(row.diet_types),
+                    allergies: row.allergies || '',
+                    dietControl: row.diet_control_level || '',
+                    dietRecommendations: row.wants_diet_recommendations || ''
+                },
+                preferences: {
+                    trainingLocation: row.training_location || '',
+                    workoutTime: row.preferred_workout_duration_mins || '',
+                    preferredFrequency: row.preferred_weekly_frequency || ''
+                },
+                selfAssessment: {
+                    satisfaction: row.physique_satisfaction || '',
+                    energy: row.energy_level || '',
+                    obstacles: parseJsonArray(row.obstacles),
+                    comments: row.additional_comments || ''
+                }
+            }
+        });
     } catch (error) { res.status(500).json({ error: 'Szerverhiba!' }); }
 });
 

@@ -8,7 +8,7 @@ const AIRecommendation = ({ workoutPlan, dietPlan }) => {
     return (
       <div className="ai-card-placeholder">
         <div className="ai-icon"><i className="fas fa-robot"></i></div>
-        <h3>AI Ajánlás</h3>
+        <h3>Ajánlás</h3>
         <p>Töltsd ki a kérdőívet a személyre szabott ajánlásokért!</p>
         <button className="btn btn-primary" onClick={() => window.location.href = '/questionnaire'}>
           <i className="fas fa-clipboard-list"></i> Kérdőív kitöltése

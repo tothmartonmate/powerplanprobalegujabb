@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import './questionnaire.css';
+import FeedbackModal from '../components/FeedbackModal';
 
 const Questionnaire = ({ navigateTo, setIsLoggedIn }) => {
   const [currentSection, setCurrentSection] = useState(1);
@@ -63,6 +64,7 @@ const Questionnaire = ({ navigateTo, setIsLoggedIn }) => {
 
   // Errors state for validation
   const [errors, setErrors] = useState({});
+  const [modalConfig, setModalConfig] = useState(null);
 
   useEffect(() => {
     // Set max date for birthDate (18 years old)
@@ -73,6 +75,24 @@ const Questionnaire = ({ navigateTo, setIsLoggedIn }) => {
 
   useEffect(() => {
     updateProgress();
+  }, [currentSection]);
+
+  useEffect(() => {
+    const inputs = document.querySelectorAll('.questionnaire-container input[type="number"], .questionnaire-container select');
+    const preventWheelChange = (event) => {
+      event.preventDefault();
+      event.currentTarget.blur();
+    };
+
+    inputs.forEach((input) => {
+      input.addEventListener('wheel', preventWheelChange, { passive: false });
+    });
+
+    return () => {
+      inputs.forEach((input) => {
+        input.removeEventListener('wheel', preventWheelChange);
+      });
+    };
   }, [currentSection]);
 
   const updateProgress = () => {
@@ -276,7 +296,12 @@ const Questionnaire = ({ navigateTo, setIsLoggedIn }) => {
     });
 
     if (!isValid) {
-      alert('Kérjük, töltse ki az összes kötelező mezőt!');
+      setModalConfig({
+        type: 'warning',
+        title: 'Hiányzó adatok',
+        message: 'Kérjük, töltsd ki az összes kötelező mezőt, mielőtt továbblépsz.',
+        confirmLabel: 'Rendben'
+      });
     }
 
     setErrors(sectionErrors);
@@ -317,7 +342,12 @@ const Questionnaire = ({ navigateTo, setIsLoggedIn }) => {
       const userId = currentUserStr ? JSON.parse(currentUserStr).id : null;
       
       if (!userId) {
-        alert("Hiba: Nem vagy bejelentkezve! Kérjük jelentkezz be a mentéshez.");
+        setModalConfig({
+          type: 'error',
+          title: 'Bejelentkezés szükséges',
+          message: 'Nem vagy bejelentkezve. Kérjük, jelentkezz be a kérdőív mentéséhez.',
+          confirmLabel: 'Rendben'
+        });
         return;
       }
 
@@ -340,12 +370,22 @@ const Questionnaire = ({ navigateTo, setIsLoggedIn }) => {
       if (!response.ok) {
         const errData = await response.json();
         console.error('Hiba az adatbázisba mentéskor:', errData);
-        alert(`Nem sikerült menteni az adatokat az adatbázisba: ${errData.error || 'Ismeretlen hiba'}`);
+        setModalConfig({
+          type: 'error',
+          title: 'Mentési hiba',
+          message: errData.error || 'Nem sikerült menteni az adatokat az adatbázisba.',
+          confirmLabel: 'Rendben'
+        });
         return; // Ne engedjük tovább a dashboardra, ha nem sikerült a mentés!
       }
     } catch (error) {
       console.error('Nem sikerült csatlakozni a szerverhez:', error);
-      alert('Szerverhiba: Nem sikerült csatlakozni a backendhez!');
+      setModalConfig({
+        type: 'error',
+        title: 'Szerverhiba',
+        message: 'Nem sikerült csatlakozni a backendhez.',
+        confirmLabel: 'Rendben'
+      });
       return;
     }
 
@@ -356,15 +396,26 @@ const Questionnaire = ({ navigateTo, setIsLoggedIn }) => {
     // Frissítjük az App komponensben a bejelentkezett állapotot
     if (setIsLoggedIn) setIsLoggedIn(true);
 
-    alert('Köszönjük a kérdőív kitöltését! Az adataid alapján személyre szabott edzéstervet készítünk.');
+    setModalConfig({
+      type: 'success',
+      title: 'Kérdőív sikeresen elküldve',
+      message: 'Köszönjük a kérdőív kitöltését. Az adataid alapján személyre szabott edzéstervet készítünk.',
+      confirmLabel: 'Tovább a dashboardra',
+      action: 'dashboard'
+    });
+  };
 
-    setTimeout(() => {
+  const handleModalClose = () => {
+    const action = modalConfig?.action;
+    setModalConfig(null);
+
+    if (action === 'dashboard') {
       if (navigateTo) {
         navigateTo('dashboard');
       } else {
         window.location.href = '/dashboard';
       }
-    }, 2000);
+    }
   };
 
   // Helper function to get slider display value
@@ -423,6 +474,7 @@ const Questionnaire = ({ navigateTo, setIsLoggedIn }) => {
                 max="250"
                 value={formData.personalInfo.height}
                 onChange={handleInputChange}
+                  onWheel={(event) => event.currentTarget.blur()}
                 name="height"
                 required
               />
@@ -439,6 +491,7 @@ const Questionnaire = ({ navigateTo, setIsLoggedIn }) => {
                 step="0.1"
                 value={formData.personalInfo.weight}
                 onChange={handleInputChange}
+                  onWheel={(event) => event.currentTarget.blur()}
                 name="weight"
                 required
               />
@@ -1113,16 +1166,6 @@ const Questionnaire = ({ navigateTo, setIsLoggedIn }) => {
                   />
                   Nem
                 </label>
-                <label className="radio-label">
-                  <input
-                    type="radio"
-                    name="dietRecommendations"
-                    value="maybe"
-                    checked={formData.nutrition.dietRecommendations === 'maybe'}
-                    onChange={handleInputChange}
-                  />
-                  Talán
-                </label>
               </div>
             </div>
           </div>
@@ -1388,6 +1431,15 @@ const Questionnaire = ({ navigateTo, setIsLoggedIn }) => {
           ))}
         </div>
       </div>
+
+      <FeedbackModal
+        isOpen={Boolean(modalConfig)}
+        type={modalConfig?.type}
+        title={modalConfig?.title}
+        message={modalConfig?.message}
+        confirmLabel={modalConfig?.confirmLabel}
+        onClose={handleModalClose}
+      />
     </div>
   );
 };
