@@ -128,6 +128,34 @@ app.get('/api/questionnaire/:userId', async (req, res) => {
     } catch (error) { res.status(500).json({ error: 'Szerverhiba!' }); }
 });
 
+const getWeekRangeFromDate = (dateInput) => {
+    const baseDate = dateInput ? new Date(dateInput) : new Date();
+    const normalizedDate = Number.isNaN(baseDate.getTime()) ? new Date() : baseDate;
+    const startOfWeek = new Date(normalizedDate);
+    const dayOfWeek = startOfWeek.getDay();
+    const diffToMonday = dayOfWeek === 0 ? -6 : -(dayOfWeek - 1);
+    startOfWeek.setDate(startOfWeek.getDate() + diffToMonday);
+    startOfWeek.setHours(0, 0, 0, 0);
+
+    const endOfWeek = new Date(startOfWeek);
+    endOfWeek.setDate(startOfWeek.getDate() + 6);
+    endOfWeek.setHours(23, 59, 59, 999);
+
+    const toDateString = (date) => {
+        const year = date.getFullYear();
+        const month = `${date.getMonth() + 1}`.padStart(2, '0');
+        const day = `${date.getDate()}`.padStart(2, '0');
+        return `${year}-${month}-${day}`;
+    };
+
+    return {
+        startOfWeek,
+        endOfWeek,
+        startDate: toDateString(startOfWeek),
+        endDate: toDateString(endOfWeek)
+    };
+};
+
 // -------------------- DASHBOARD --------------------
 app.get('/api/dashboard/:userId', async (req, res) => {
     const userId = req.params.userId;
@@ -189,12 +217,63 @@ app.get('/api/dashboard/:userId', async (req, res) => {
     } catch (error) { console.error(error); res.status(500).json({ success: false }); }
 });
 
+app.get('/api/nutrition/:userId/week', async (req, res) => {
+    const { userId } = req.params;
+    const { date } = req.query;
+
+    if (!userId) {
+        return res.status(400).json({ error: 'Hiányzó felhasználó azonosító!' });
+    }
+
+    try {
+        const { startDate, endDate, startOfWeek } = getWeekRangeFromDate(date);
+        const [rows] = await pool.query(
+            `SELECT id, meal_type, food_name as name, description, calories, protein_g as protein, carbs_g as carbs, fat_g as fat, DATE_FORMAT(consumed_date, '%Y-%m-%d') as consumedDate, DATE_FORMAT(created_at, '%H:%i') as time
+             FROM nutrition_logs
+             WHERE user_id = ? AND consumed_date BETWEEN ? AND ?
+             ORDER BY consumed_date DESC, created_at DESC`,
+            [userId, startDate, endDate]
+        );
+
+        const totalsByDate = rows.reduce((accumulator, meal) => {
+            accumulator[meal.consumedDate] = (accumulator[meal.consumedDate] || 0) + (Number(meal.calories) || 0);
+            return accumulator;
+        }, {});
+
+        const dailyTotals = Array.from({ length: 7 }, (_, index) => {
+            const day = new Date(startOfWeek);
+            day.setDate(startOfWeek.getDate() + index);
+            const year = day.getFullYear();
+            const month = `${day.getMonth() + 1}`.padStart(2, '0');
+            const dayOfMonth = `${day.getDate()}`.padStart(2, '0');
+            const currentDate = `${year}-${month}-${dayOfMonth}`;
+
+            return {
+                date: currentDate,
+                totalCalories: totalsByDate[currentDate] || 0
+            };
+        });
+
+        return res.json({
+            success: true,
+            meals: rows,
+            dailyTotals,
+            weekStart: startDate,
+            weekEnd: endDate
+        });
+    } catch (error) {
+        console.error('Hiba heti táplálkozás lekérésekor:', error);
+        return res.status(500).json({ error: 'Szerverhiba!' });
+    }
+});
+
 // -------------------- ÉTKEZÉS NAPLÓZÁSA --------------------
 app.post('/api/meals', async (req, res) => {
-    const { userId, mealType, foodName, description, calories } = req.body;
+    const { userId, mealType, foodName, description, calories, consumedDate } = req.body;
     if (!userId || !mealType || !foodName || !calories) return res.status(400).json({ error: 'Hiányzó adatok!' });
     try {
-        await pool.query(`INSERT INTO nutrition_logs (user_id, meal_type, food_name, description, calories, consumed_date) VALUES (?, ?, ?, ?, ?, CURDATE())`, [userId, mealType, foodName, description, calories]);
+        const mealDate = consumedDate || new Date().toISOString().split('T')[0];
+        await pool.query(`INSERT INTO nutrition_logs (user_id, meal_type, food_name, description, calories, consumed_date) VALUES (?, ?, ?, ?, ?, ?)`, [userId, mealType, foodName, description, calories, mealDate]);
         res.status(201).json({ success: true });
     } catch (error) { res.status(500).json({ error: 'Szerverhiba!' }); }
 });

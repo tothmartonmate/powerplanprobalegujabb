@@ -1,9 +1,47 @@
 import React, { useState, useEffect } from 'react';
-import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, BarElement, Title, Tooltip, Legend, Filler } from 'chart.js';
-import { Line, Bar } from 'react-chartjs-2';
+import { Chart as ChartJS, CategoryScale, LinearScale, RadialLinearScale, PointElement, LineElement, BarElement, Title, Tooltip, Legend, Filler } from 'chart.js';
+import { Line, Bar, Radar } from 'react-chartjs-2';
 import './dashboard.css';
 
-ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, BarElement, Title, Tooltip, Legend, Filler);
+ChartJS.register(CategoryScale, LinearScale, RadialLinearScale, PointElement, LineElement, BarElement, Title, Tooltip, Legend, Filler);
+
+const formatLocalDate = (dateInput) => {
+  const date = dateInput instanceof Date ? new Date(dateInput) : new Date(dateInput);
+  if (Number.isNaN(date.getTime())) return '';
+  const year = date.getFullYear();
+  const month = `${date.getMonth() + 1}`.padStart(2, '0');
+  const day = `${date.getDate()}`.padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
+
+const getStartOfWeek = (dateInput) => {
+  const date = dateInput instanceof Date ? new Date(dateInput) : new Date(dateInput);
+  const safeDate = Number.isNaN(date.getTime()) ? new Date() : date;
+  const start = new Date(safeDate);
+  const dayOfWeek = start.getDay();
+  const diffToMonday = dayOfWeek === 0 ? -6 : -(dayOfWeek - 1);
+  start.setDate(start.getDate() + diffToMonday);
+  start.setHours(0, 0, 0, 0);
+  return start;
+};
+
+const isSameDay = (firstDate, secondDate) => formatLocalDate(firstDate) === formatLocalDate(secondDate);
+
+const formatHungarianLongDate = (dateInput) => {
+  const date = dateInput instanceof Date ? new Date(dateInput) : new Date(dateInput);
+  if (Number.isNaN(date.getTime())) return '-';
+
+  const formatted = date.toLocaleDateString('hu-HU', {
+    month: 'long',
+    day: 'numeric',
+    weekday: 'long'
+  });
+
+  return formatted
+    .split(', ')
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(', ');
+};
 
 // GYAKORLAT ADATBÁZIS (TELJES)
 const EXERCISE_DB_WITH_VIDEOS = {
@@ -107,7 +145,19 @@ const WeekCalendar = ({ selectedDate, onDateChange, onWeekChange }) => {
     return start;
   });
 
+  useEffect(() => {
+    if (!selectedDate) return;
+    setCurrentWeekStart(getStartOfWeek(selectedDate));
+  }, [selectedDate]);
+
   const weekDays = ['Hétfő', 'Kedd', 'Szerda', 'Csütörtök', 'Péntek', 'Szombat', 'Vasárnap'];
+
+  const getSelectedOffset = () => {
+    if (!selectedDate) return 0;
+    const date = new Date(selectedDate);
+    const dayOfWeek = date.getDay();
+    return dayOfWeek === 0 ? 6 : dayOfWeek - 1;
+  };
   
   const getWeekDates = () => {
     const dates = [];
@@ -124,6 +174,11 @@ const WeekCalendar = ({ selectedDate, onDateChange, onWeekChange }) => {
     newStart.setDate(currentWeekStart.getDate() - 7);
     setCurrentWeekStart(newStart);
     if (onWeekChange) onWeekChange(newStart);
+    if (onDateChange) {
+      const newSelectedDate = new Date(newStart);
+      newSelectedDate.setDate(newStart.getDate() + getSelectedOffset());
+      onDateChange(newSelectedDate);
+    }
   };
 
   const nextWeek = () => {
@@ -131,6 +186,11 @@ const WeekCalendar = ({ selectedDate, onDateChange, onWeekChange }) => {
     newStart.setDate(currentWeekStart.getDate() + 7);
     setCurrentWeekStart(newStart);
     if (onWeekChange) onWeekChange(newStart);
+    if (onDateChange) {
+      const newSelectedDate = new Date(newStart);
+      newSelectedDate.setDate(newStart.getDate() + getSelectedOffset());
+      onDateChange(newSelectedDate);
+    }
   };
 
   const goToToday = () => {
@@ -303,7 +363,10 @@ const Dashboard = ({ navigateTo, handleLogout, requestLogout, darkMode, setDarkM
   const [userData, setUserData] = useState({});
   const [workoutData, setWorkoutData] = useState({ weeklyPlan: [], stats: {}, aiRecommendation: '' });
   const [nutritionData, setNutritionData] = useState({ todayMeals: [], dailyCalories: 0 });
+  const [nutritionWeekData, setNutritionWeekData] = useState({ dailyTotals: [], meals: [] });
   const [weightHistory, setWeightHistory] = useState([]);
+  const [nutritionSelectedDate, setNutritionSelectedDate] = useState(new Date());
+  const [currentDayKey, setCurrentDayKey] = useState(formatLocalDate(new Date()));
   
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [weekWorkouts, setWeekWorkouts] = useState([]);
@@ -336,6 +399,7 @@ const Dashboard = ({ navigateTo, handleLogout, requestLogout, darkMode, setDarkM
       if (currentUser.id && token && currentUser.id !== 'demo-999') {
         loadUserData(currentUser.id, token);
         loadDashboardData(currentUser.id, token);
+        loadNutritionWeek(new Date());
         loadProfileImage(currentUser.id, token);
         loadProgressPhotos(currentUser.id, token);
       }
@@ -414,6 +478,29 @@ const Dashboard = ({ navigateTo, handleLogout, requestLogout, darkMode, setDarkM
         }
       }
     } catch (error) { console.error(error); }
+  };
+
+  const loadNutritionWeek = async (date) => {
+    const currentUser = JSON.parse(localStorage.getItem('powerplan_current_user') || '{}');
+    const token = localStorage.getItem('powerplan_token');
+    if (!currentUser.id || currentUser.id === 'demo-999') return;
+
+    try {
+      const response = await fetch(
+        `http://localhost:5001/api/nutrition/${currentUser.id}/week?date=${formatLocalDate(date)}`,
+        { headers: { 'Authorization': `Bearer ${token}` } }
+      );
+
+      if (response.ok) {
+        const data = await response.json();
+        setNutritionWeekData({
+          dailyTotals: data.dailyTotals || [],
+          meals: data.meals || []
+        });
+      }
+    } catch (error) {
+      console.error('Hiba heti táplálkozás betöltésekor:', error);
+    }
   };
 
   const loadProgressPhotos = async (userId, token) => {
@@ -553,6 +640,12 @@ const Dashboard = ({ navigateTo, handleLogout, requestLogout, darkMode, setDarkM
       loadWeekWorkouts(selectedDate);
     }
   }, [selectedDate, currentSection]);
+
+  useEffect(() => {
+    if (currentSection === 'nutrition' && nutritionWeekData.dailyTotals.length === 0) {
+      loadNutritionWeek(nutritionSelectedDate);
+    }
+  }, [currentSection, nutritionSelectedDate, nutritionWeekData.dailyTotals.length]);
 
   // Profilkép feltöltés (adatbázisba)
   const handleImageUpload = async (e) => {
@@ -804,7 +897,8 @@ const Dashboard = ({ navigateTo, handleLogout, requestLogout, darkMode, setDarkM
       mealType: document.getElementById('mealType').value,
       foodName: selectedFood?.name || document.getElementById('mealName').value, 
       description: document.getElementById('mealDescription')?.value || '',
-      calories: selectedFood?.calories || document.getElementById('mealCalories').value
+      calories: selectedFood?.calories || document.getElementById('mealCalories').value,
+      consumedDate: formatLocalDate(nutritionSelectedDate)
     };
 
     try {
@@ -817,6 +911,7 @@ const Dashboard = ({ navigateTo, handleLogout, requestLogout, darkMode, setDarkM
         showToast('Étkezés naplózva!', 'success');
         closeModal(); 
         loadDashboardData(currentUser.id, token);
+        loadNutritionWeek(nutritionSelectedDate);
         setSelectedFood(null);
         document.getElementById('mealLogForm')?.reset();
       }
@@ -851,6 +946,7 @@ const Dashboard = ({ navigateTo, handleLogout, requestLogout, darkMode, setDarkM
         showToast('Étkezés törölve!', 'success');
         closeDeleteMealModal();
         loadDashboardData(currentUser.id, token);
+        loadNutritionWeek(nutritionSelectedDate);
       } else {
         showToast('Hiba a törléskor!', 'error');
       }
@@ -1027,14 +1123,35 @@ const Dashboard = ({ navigateTo, handleLogout, requestLogout, darkMode, setDarkM
 
   useEffect(() => {
     updateDateTime();
-    const interval = setInterval(updateDateTime, 60000);
+    const interval = setInterval(() => {
+      updateDateTime();
+
+      const nextDayKey = formatLocalDate(new Date());
+      if (nextDayKey !== currentDayKey) {
+        const previousDayKey = currentDayKey;
+        setCurrentDayKey(nextDayKey);
+
+        const token = localStorage.getItem('powerplan_token');
+        const savedUser = localStorage.getItem('powerplan_current_user');
+        const currentUser = savedUser ? JSON.parse(savedUser) : null;
+
+        if (currentUser && currentUser.id && token && currentUser.id !== 'demo-999') {
+          loadDashboardData(currentUser.id, token);
+          loadNutritionWeek(new Date());
+        }
+
+        setNutritionSelectedDate((previousDate) => (
+          formatLocalDate(previousDate) === previousDayKey ? new Date() : previousDate
+        ));
+      }
+    }, 60000);
     let timer;
     if (workoutActive) timer = setInterval(() => setWorkoutTime(prev => prev + 1), 1000);
     return () => {
       clearInterval(interval);
       clearInterval(timer);
     };
-  }, [workoutActive]);
+  }, [workoutActive, currentDayKey]);
 
   const formatTime = (seconds) => {
     const mins = Math.floor(seconds / 60); 
@@ -1143,9 +1260,112 @@ const Dashboard = ({ navigateTo, handleLogout, requestLogout, darkMode, setDarkM
     }
   };
 
-  const totalCaloriesToday = nutritionData.todayMeals?.reduce((sum, meal) => sum + (meal.calories || 0), 0) || 0;
+  const localTodayKey = formatLocalDate(new Date());
+  const localTodayMeals = (nutritionWeekData.meals || []).filter((meal) => meal.consumedDate === localTodayKey);
+  const totalCaloriesToday = localTodayMeals.length > 0
+    ? localTodayMeals.reduce((sum, meal) => sum + (meal.calories || 0), 0)
+    : (nutritionData.todayMeals?.reduce((sum, meal) => sum + (meal.calories || 0), 0) || 0);
   const calorieGoal = 2500;
   const calorieProgress = (totalCaloriesToday / calorieGoal) * 100;
+  const isViewingTodayNutrition = isSameDay(nutritionSelectedDate, new Date());
+  const selectedNutritionDateKey = formatLocalDate(nutritionSelectedDate);
+  const selectedNutritionMeals = (nutritionWeekData.meals || []).filter((meal) => meal.consumedDate === selectedNutritionDateKey);
+  const selectedNutritionCalories = selectedNutritionMeals.reduce((sum, meal) => sum + (meal.calories || 0), 0);
+  const displayedCalories = isViewingTodayNutrition ? totalCaloriesToday : selectedNutritionCalories;
+  const displayedCalorieProgress = (displayedCalories / calorieGoal) * 100;
+  const nutritionWeekStart = getStartOfWeek(nutritionSelectedDate);
+  const nutritionDailyTotals = Array.from({ length: 7 }, (_, index) => {
+    const currentDate = new Date(nutritionWeekStart);
+    currentDate.setDate(nutritionWeekStart.getDate() + index);
+    const currentDateKey = formatLocalDate(currentDate);
+    const existingEntry = (nutritionWeekData.dailyTotals || []).find((day) => day.date === currentDateKey);
+    const mealsForDay = (nutritionWeekData.meals || []).filter((meal) => meal.consumedDate === currentDateKey);
+    const totalForDay = currentDateKey === localTodayKey
+      ? totalCaloriesToday
+      : (existingEntry?.totalCalories || mealsForDay.reduce((sum, meal) => sum + (meal.calories || 0), 0));
+
+    return {
+      date: currentDateKey,
+      totalCalories: totalForDay,
+      label: currentDate.toLocaleDateString('hu-HU', { weekday: 'short', day: 'numeric' }),
+      fullDateLabel: formatHungarianLongDate(currentDate),
+      meals: mealsForDay
+    };
+  });
+
+  const weeklyCalories = nutritionDailyTotals.reduce((sum, day) => sum + day.totalCalories, 0);
+  const averageDailyCalories = Math.round(weeklyCalories / nutritionDailyTotals.length);
+  const highestCalorieDay = nutritionDailyTotals.reduce(
+    (bestDay, currentDay) => currentDay.totalCalories > bestDay.totalCalories ? currentDay : bestDay,
+    nutritionDailyTotals[0] || { label: '-', totalCalories: 0 }
+  );
+  const remainingCalories = Math.max(calorieGoal - displayedCalories, 0);
+  const radarMaxCalories = Math.max(calorieGoal, ...nutritionDailyTotals.map((day) => day.totalCalories), 500);
+
+  const nutritionChartData = {
+    labels: nutritionDailyTotals.map((day) => day.label),
+    datasets: [{
+      label: 'Heti kalóriabevitel (kcal)',
+      data: nutritionDailyTotals.map((day) => day.totalCalories),
+      borderColor: '#e63946',
+      backgroundColor: 'rgba(230, 57, 70, 0.22)',
+      fill: true,
+      pointBackgroundColor: '#e63946',
+      pointBorderColor: '#ffffff',
+      pointBorderWidth: 2,
+      pointRadius: 4,
+      pointHoverRadius: 6,
+      borderWidth: 2
+    }]
+  };
+
+  const nutritionChartOptions = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: { display: false },
+      tooltip: {
+        callbacks: {
+          title: (tooltipItems) => {
+            const dayData = nutritionDailyTotals[tooltipItems[0]?.dataIndex] || null;
+            return dayData?.fullDateLabel || tooltipItems[0]?.label || '';
+          },
+          label: (context) => `Összesen: ${context.raw || 0} kcal`,
+          afterLabel: (context) => {
+            const dayData = nutritionDailyTotals[context.dataIndex] || null;
+            if (!dayData || !dayData.meals || dayData.meals.length === 0) {
+              return 'Nincs naplózott étkezés';
+            }
+
+            return dayData.meals.map((meal) => `${meal.name}: ${meal.calories} kcal`);
+          }
+        }
+      }
+    },
+    scales: {
+      r: {
+        beginAtZero: true,
+        suggestedMax: radarMaxCalories,
+        ticks: {
+          display: false,
+          stepSize: Math.max(100, Math.ceil(radarMaxCalories / 5 / 50) * 50)
+        },
+        grid: {
+          color: 'rgba(255, 255, 255, 0.08)'
+        },
+        angleLines: {
+          color: 'rgba(255, 255, 255, 0.08)'
+        },
+        pointLabels: {
+          color: '#b8b8c9',
+          font: {
+            size: 12,
+            weight: '600'
+          }
+        }
+      }
+    }
+  };
 
   const sectionTitles = {
     'dashboard': { icon: 'fa-home', text: 'Dashboard', subtitle: 'Üdvözöljük!' },
@@ -1385,26 +1605,15 @@ const Dashboard = ({ navigateTo, handleLogout, requestLogout, darkMode, setDarkM
         {/* NUTRITION SECTION */}
         <div className={`content-section ${currentSection === 'nutrition' ? 'active' : ''}`}>
           <div className="card">
-            <div className="section-header">
-              <h2><i className="fas fa-utensils"></i> Táplálkozás</h2>
+            <div className="nutrition-top-row">
+              <h3>Napi étkezések</h3>
               <button className="btn btn-primary" onClick={showMealLogModal}><i className="fas fa-plus"></i> Étkezés</button>
             </div>
-            <div className="calorie-summary">
-              <div className="calorie-circle">
-                <svg width="120" height="120" viewBox="0 0 120 120">
-                  <circle cx="60" cy="60" r="54" fill="none" stroke="#e0e0e0" strokeWidth="12"/>
-                  <circle cx="60" cy="60" r="54" fill="none" stroke="#e63946" strokeWidth="12" 
-                    strokeDasharray={`${2 * Math.PI * 54 * calorieProgress / 100} ${2 * Math.PI * 54}`} 
-                    transform="rotate(-90 60 60)"/>
-                </svg>
-                <div className="calorie-text">
-                  <span className="calorie-value">{totalCaloriesToday}</span>
-                  <span className="calorie-label">/ {calorieGoal}</span>
-                </div>
-              </div>
+            <div className="nutrition-date-row">
+              <span>{formatHungarianLongDate(nutritionSelectedDate)}</span>
             </div>
-            <div className="meal-plan">
-              {nutritionData.todayMeals?.map((meal, i) => (
+            <div className="meal-plan nutrition-meal-plan">
+              {selectedNutritionMeals.map((meal, i) => (
                 <div key={i} className="meal-card">
                   <div className="meal-card-header">
                     <span className="meal-time">{meal.meal_type === 'breakfast' ? 'Reggeli' : meal.meal_type === 'lunch' ? 'Ebéd' : meal.meal_type === 'dinner' ? 'Vacsora' : 'Snack'}</span>
@@ -1421,9 +1630,67 @@ const Dashboard = ({ navigateTo, handleLogout, requestLogout, darkMode, setDarkM
                   </div>
                 </div>
               ))}
-              {(!nutritionData.todayMeals || nutritionData.todayMeals.length === 0) && (
+              {selectedNutritionMeals.length === 0 && (
                 <p className="no-data">Még nincs naplózott étkezés.</p>
               )}
+            </div>
+            <WeekCalendar
+              selectedDate={nutritionSelectedDate}
+              onDateChange={setNutritionSelectedDate}
+              onWeekChange={loadNutritionWeek}
+            />
+            <div className="nutrition-layout">
+              <div className="nutrition-chart-card nutrition-radar-panel">
+                <div className="nutrition-chart-header">
+                  <div>
+                    <h3>Heti kalóriatérkép</h3>
+                    <p>A hét minden napja egyetlen nézetben.</p>
+                  </div>
+                  <span>{new Date(nutritionSelectedDate).toLocaleDateString('hu-HU')}</span>
+                </div>
+                <div className="nutrition-radar-wrap">
+                  <Radar data={nutritionChartData} options={nutritionChartOptions} />
+                </div>
+              </div>
+              <div className="nutrition-side-panel">
+                <div className="nutrition-summary-card nutrition-summary-card-main">
+                  <span className="nutrition-summary-label">Kiválasztott nap</span>
+                  <div className="calorie-summary">
+                    <div className="calorie-circle">
+                      <svg width="120" height="120" viewBox="0 0 120 120">
+                        <circle cx="60" cy="60" r="54" fill="none" stroke="#e0e0e0" strokeWidth="12"/>
+                        <circle cx="60" cy="60" r="54" fill="none" stroke="#e63946" strokeWidth="12" 
+                          strokeDasharray={`${2 * Math.PI * 54 * displayedCalorieProgress / 100} ${2 * Math.PI * 54}`} 
+                          transform="rotate(-90 60 60)"/>
+                      </svg>
+                      <div className="calorie-text">
+                        <span className="calorie-value">{displayedCalories}</span>
+                        <span className="calorie-label">/ {calorieGoal}</span>
+                      </div>
+                    </div>
+                  </div>
+                  <span className="nutrition-summary-date">{formatHungarianLongDate(nutritionSelectedDate)}</span>
+                </div>
+                <div className="nutrition-summary-grid">
+                  <div className="nutrition-summary-card">
+                    <span className="nutrition-summary-label">Heti összesen</span>
+                    <strong>{weeklyCalories} kcal</strong>
+                  </div>
+                  <div className="nutrition-summary-card">
+                    <span className="nutrition-summary-label">Napi átlag</span>
+                    <strong>{averageDailyCalories} kcal</strong>
+                  </div>
+                  <div className="nutrition-summary-card">
+                    <span className="nutrition-summary-label">Legtöbb bevitel</span>
+                    <strong>{highestCalorieDay.fullDateLabel || '-'}</strong>
+                    <small>{highestCalorieDay.totalCalories} kcal</small>
+                  </div>
+                  <div className="nutrition-summary-card">
+                    <span className="nutrition-summary-label">Hátralévő keret</span>
+                    <strong>{remainingCalories} kcal</strong>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
