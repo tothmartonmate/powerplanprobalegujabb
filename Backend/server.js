@@ -23,6 +23,8 @@ const pool = mysql.createPool({
 
 const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
+const normalizeUserRole = (value) => (String(value || '').trim().toLowerCase() === 'admin' ? 'admin' : 'user');
+
 let progressImageColumnPromise;
 let workoutSchemaPromise;
 const parseJsonArray = (value) => {
@@ -390,10 +392,21 @@ const ensureWorkoutSchema = async () => {
 
 const ensureAdminSchema = async () => {
     try {
+        const [roleColumn] = await pool.query("SHOW COLUMNS FROM users LIKE 'role'");
         const [adminColumn] = await pool.query("SHOW COLUMNS FROM users LIKE 'is_admin'");
-        if (adminColumn.length === 0) {
-            await pool.query('ALTER TABLE users ADD COLUMN is_admin TINYINT(1) NOT NULL DEFAULT 0');
-            console.log('✅ Hozzáadva az is_admin oszlop a users táblához');
+
+        if (roleColumn.length === 0) {
+            await pool.query(`
+                ALTER TABLE users
+                ADD COLUMN role ENUM('user', 'admin')
+                CHARACTER SET utf8mb4 COLLATE utf8mb4_hungarian_ci
+                NOT NULL DEFAULT 'user'
+            `);
+            console.log('✅ Hozzáadva a role oszlop a users táblához');
+        }
+
+        if (adminColumn.length > 0) {
+            await pool.query("UPDATE users SET role = 'admin' WHERE is_admin = 1");
         }
 
         await pool.query(`
@@ -420,8 +433,8 @@ const ensureAdminSchema = async () => {
 
 const isAdminUser = async (userId) => {
     if (!userId) return false;
-    const [rows] = await pool.query('SELECT is_admin FROM users WHERE id = ? LIMIT 1', [userId]);
-    return rows.length > 0 && Boolean(rows[0].is_admin);
+    const [rows] = await pool.query('SELECT role FROM users WHERE id = ? LIMIT 1', [userId]);
+    return rows.length > 0 && normalizeUserRole(rows[0].role) === 'admin';
 };
 
 const requireAdmin = async (userId, res) => {
@@ -485,15 +498,23 @@ app.post('/api/register', async (req, res) => {
 app.post('/api/login', async (req, res) => {
     const { email, password } = req.body;
     try {
-        const [users] = await pool.query('SELECT id, full_name, email, password_hash, profile_image, is_admin FROM users WHERE email = ?', [email]);
+        const [users] = await pool.query('SELECT id, full_name, email, password_hash, profile_image, role FROM users WHERE email = ?', [email]);
         if (users.length === 0) return res.status(401).json({ error: 'Hibás adatok!' });
         const user = users[0];
+        const role = normalizeUserRole(user.role);
         const validPassword = await bcrypt.compare(password, user.password_hash);
         if (!validPassword) return res.status(401).json({ error: 'Hibás adatok!' });
         const token = Buffer.from(`${user.id}-${Date.now()}`).toString('base64');
         res.status(200).json({ 
             success: true, 
-            user: { id: user.id, full_name: user.full_name, email: user.email, profile_image: user.profile_image, is_admin: Boolean(user.is_admin) },
+            user: {
+                id: user.id,
+                full_name: user.full_name,
+                email: user.email,
+                profile_image: user.profile_image,
+                role,
+                is_admin: role === 'admin'
+            },
             token: token
         });
     } catch (error) { 
@@ -1126,9 +1147,10 @@ app.post('/api/upload-profile-image', async (req, res) => {
 // -------------------- PROFILKÉP LEKÉRÉSE --------------------
 app.get('/api/user-profile/:userId', async (req, res) => {
     try {
-        const [rows] = await pool.query('SELECT profile_image FROM users WHERE id = ?', [req.params.userId]);
+        const [rows] = await pool.query('SELECT profile_image, role FROM users WHERE id = ?', [req.params.userId]);
         if (rows.length === 0) return res.status(404).json({ error: 'Felhasználó nem található' });
-        res.json({ success: true, profileImage: rows[0].profile_image });
+        const role = normalizeUserRole(rows[0].role);
+        res.json({ success: true, profileImage: rows[0].profile_image, role, isAdmin: role === 'admin' });
     } catch (error) {
         res.status(500).json({ error: 'Szerverhiba!' });
     }
@@ -1171,7 +1193,7 @@ app.get('/api/admin/overview/:userId', async (req, res) => {
 
         const [users] = await pool.query(
             `SELECT id, full_name as fullName, email, fitness_goal as fitnessGoal, total_points as totalPoints,
-                    current_level as currentLevel, profile_image as profileImage, is_admin as isAdmin,
+                    current_level as currentLevel, profile_image as profileImage, role,
                     created_at as createdAt, updated_at as updatedAt
              FROM users
              ORDER BY created_at DESC`
@@ -1182,7 +1204,8 @@ app.get('/api/admin/overview/:userId', async (req, res) => {
             messages,
             users: users.map((user) => ({
                 ...user,
-                isAdmin: Boolean(user.isAdmin)
+                role: normalizeUserRole(user.role),
+                isAdmin: normalizeUserRole(user.role) === 'admin'
             }))
         });
     } catch (error) {
@@ -1220,7 +1243,7 @@ app.put('/api/admin/messages/:messageId/reply', async (req, res) => {
 app.put('/api/admin/users/:targetUserId', async (req, res) => {
     const adminUserId = Number(req.body.adminUserId);
     const targetUserId = Number(req.params.targetUserId);
-    const { fullName, email, fitnessGoal, totalPoints, currentLevel, isAdmin } = req.body;
+    const { fullName, email, fitnessGoal, totalPoints, currentLevel, role } = req.body;
 
     if (!targetUserId || !fullName || !email) {
         return res.status(400).json({ error: 'A név, email és azonosító kötelező!' });
@@ -1229,6 +1252,8 @@ app.put('/api/admin/users/:targetUserId', async (req, res) => {
     try {
         if (!(await requireAdmin(adminUserId, res))) return;
 
+        const normalizedRole = normalizeUserRole(role);
+
         await pool.query(
             `UPDATE users
              SET full_name = ?,
@@ -1236,7 +1261,7 @@ app.put('/api/admin/users/:targetUserId', async (req, res) => {
                  fitness_goal = ?,
                  total_points = ?,
                  current_level = ?,
-                 is_admin = ?
+                 role = ?
              WHERE id = ?`,
             [
                 String(fullName).trim(),
@@ -1244,7 +1269,7 @@ app.put('/api/admin/users/:targetUserId', async (req, res) => {
                 fitnessGoal || null,
                 Number.isFinite(Number(totalPoints)) ? Number(totalPoints) : 0,
                 Number.isFinite(Number(currentLevel)) ? Number(currentLevel) : 1,
-                isAdmin ? 1 : 0,
+                normalizedRole,
                 targetUserId
             ]
         );

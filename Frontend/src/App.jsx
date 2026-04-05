@@ -94,7 +94,9 @@ function App() {
     const demoUser = {
       id: 'demo-999',
       full_name: 'Demó Felhasználó',
-      email: 'demo@powerplan.hu'
+      email: 'demo@powerplan.hu',
+      role: 'user',
+      is_admin: false
     };
     localStorage.setItem('powerplan_current_user', JSON.stringify(demoUser));
     

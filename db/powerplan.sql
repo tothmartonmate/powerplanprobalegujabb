@@ -114,6 +114,7 @@ CREATE TABLE `users` (
   `fitness_goal` varchar(50) DEFAULT NULL,
   `total_points` int DEFAULT '0',
   `current_level` int DEFAULT '1',
+  `role` enum('user','admin') CHARACTER SET utf8mb4 COLLATE utf8mb4_hungarian_ci NOT NULL DEFAULT 'user',
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   `profile_image` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci

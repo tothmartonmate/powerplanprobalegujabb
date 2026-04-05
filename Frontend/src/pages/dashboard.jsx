@@ -788,6 +788,9 @@ const Dashboard = ({ navigateTo, handleLogout, requestLogout, darkMode, setDarkM
   const [adminUsers, setAdminUsers] = useState([]);
   const [adminMessages, setAdminMessages] = useState([]);
   const [adminLoading, setAdminLoading] = useState(false);
+
+  const getUserRole = (user) => (String(user?.role || '').trim().toLowerCase() === 'admin' ? 'admin' : 'user');
+  const hasAdminAccess = (user) => getUserRole(user) === 'admin' || Boolean(user?.is_admin);
   
   const [userData, setUserData] = useState({});
   const [workoutData, setWorkoutData] = useState({ weeklyPlan: [], stats: {}, aiRecommendation: '', recommendedPlan: [], recommendationNote: '' });
@@ -868,7 +871,7 @@ const Dashboard = ({ navigateTo, handleLogout, requestLogout, darkMode, setDarkM
     const currentUser = savedUser ? JSON.parse(savedUser) : null;
 
     if (currentUser) {
-      setIsAdmin(Boolean(currentUser.is_admin));
+      setIsAdmin(hasAdminAccess(currentUser));
       const nameParts = (currentUser.full_name || '').split(' ');
       setUserData({
         email: currentUser.email || '',
@@ -899,7 +902,7 @@ const Dashboard = ({ navigateTo, handleLogout, requestLogout, darkMode, setDarkM
         loadNutritionWeek(new Date());
         loadProfileImage(currentUser.id, token);
         loadProgressPhotos(currentUser.id, token);
-        if (currentUser.is_admin) {
+        if (hasAdminAccess(currentUser)) {
           loadAdminData(currentUser.id, token);
         }
       }
@@ -965,6 +968,18 @@ const Dashboard = ({ navigateTo, handleLogout, requestLogout, darkMode, setDarkM
         const data = await response.json();
         const imageValue = data.profileImage || null;
         setProfileImage(imageValue);
+        setIsAdmin(data.role === 'admin' || Boolean(data.isAdmin));
+
+        const savedUser = JSON.parse(localStorage.getItem('powerplan_current_user') || '{}');
+        if (savedUser.id === userId) {
+          localStorage.setItem('powerplan_current_user', JSON.stringify({
+            ...savedUser,
+            profile_image: imageValue,
+            role: data.role || savedUser.role || 'user',
+            is_admin: data.role === 'admin' || Boolean(data.isAdmin)
+          }));
+        }
+
         if (imageValue) {
           localStorage.setItem(getProfileImageStorageKey(userId), imageValue);
         } else {
@@ -1105,7 +1120,7 @@ const Dashboard = ({ navigateTo, handleLogout, requestLogout, darkMode, setDarkM
           fitnessGoal: selectedUser.fitnessGoal,
           totalPoints: selectedUser.totalPoints,
           currentLevel: selectedUser.currentLevel,
-          isAdmin: selectedUser.isAdmin
+          role: selectedUser.role
         })
       });
 
@@ -1120,10 +1135,11 @@ const Dashboard = ({ navigateTo, handleLogout, requestLogout, darkMode, setDarkM
           ...currentUser,
           full_name: selectedUser.fullName,
           email: selectedUser.email,
-          is_admin: Boolean(selectedUser.isAdmin)
+          role: selectedUser.role,
+          is_admin: selectedUser.role === 'admin'
         };
         localStorage.setItem('powerplan_current_user', JSON.stringify(updatedCurrentUser));
-        setIsAdmin(Boolean(selectedUser.isAdmin));
+        setIsAdmin(selectedUser.role === 'admin');
       }
 
       showToast('Felhasználó adatai elmentve.', 'success');
@@ -2749,12 +2765,15 @@ const Dashboard = ({ navigateTo, handleLogout, requestLogout, darkMode, setDarkM
                             <p className="admin-meta">#{user.id} • {user.email}</p>
                           </div>
                           <label className="admin-role-toggle">
-                            <input
-                              type="checkbox"
-                              checked={Boolean(user.isAdmin)}
-                              onChange={(e) => handleAdminUserFieldChange(user.id, 'isAdmin', e.target.checked)}
-                            />
-                            <span>Admin</span>
+                            <span>Jogosultság</span>
+                            <select
+                              className="form-control"
+                              value={user.role || 'user'}
+                              onChange={(e) => handleAdminUserFieldChange(user.id, 'role', e.target.value)}
+                            >
+                              <option value="user">Felhasználó</option>
+                              <option value="admin">Admin</option>
+                            </select>
                           </label>
                         </div>
                         <div className="profile-info-grid admin-form-grid">

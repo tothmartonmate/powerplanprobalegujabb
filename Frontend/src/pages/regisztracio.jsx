@@ -79,7 +79,9 @@ function Registration({ navigateTo, registrationDraft, setRegistrationDraft }) {
           localStorage.setItem('powerplan_current_user', JSON.stringify({
             id: data.userId,
             full_name: userData.full_name,
-            email: userData.email
+            email: userData.email,
+            role: 'user',
+            is_admin: false
           }));
         }
         setRegistrationDraft({
