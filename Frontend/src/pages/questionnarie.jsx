@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import './questionnaire.css';
 import FeedbackModal from '../components/FeedbackModal';
 
@@ -8,6 +8,7 @@ const MAX_REALISTIC_WEIGHT_KG = 200;
 const Questionnaire = ({ navigateTo, setIsLoggedIn }) => {
   const [currentSection, setCurrentSection] = useState(1);
   const totalSections = 8;
+  const containerRef = useRef(null);
 
   // Form state
   const [formData, setFormData] = useState({
@@ -82,14 +83,20 @@ const Questionnaire = ({ navigateTo, setIsLoggedIn }) => {
   }, [currentSection]);
 
   useEffect(() => {
+    containerRef.current?.scrollIntoView({ block: 'start' });
+    window.scrollTo({ top: 0, behavior: 'auto' });
+    document.documentElement.scrollTop = 0;
+    document.body.scrollTop = 0;
+  }, [currentSection]);
+
+  useEffect(() => {
     const inputs = document.querySelectorAll('.questionnaire-container input[type="number"], .questionnaire-container select');
     const preventWheelChange = (event) => {
-      event.preventDefault();
       event.currentTarget.blur();
     };
 
     inputs.forEach((input) => {
-      input.addEventListener('wheel', preventWheelChange, { passive: false });
+      input.addEventListener('wheel', preventWheelChange);
     });
 
     return () => {
@@ -447,7 +454,7 @@ const Questionnaire = ({ navigateTo, setIsLoggedIn }) => {
   };
 
   return (
-    <div className="questionnaire-container">
+    <div className="questionnaire-container" ref={containerRef}>
       <div className="header">
         <h1>Személyre Szabott Edzésterv</h1>
         <p>Kérjük, töltse ki a kérdőívet, hogy az Ön igényeihez tudjuk igazítani az edzéstervet</p>

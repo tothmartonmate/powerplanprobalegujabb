@@ -178,7 +178,6 @@ const getAuthHeaders = (token) => (token ? { Authorization: `Bearer ${token}` } 
 const getProfileImageStorageKey = (userId) => `powerplan_profile_image_${userId}`;
 
 const preventNumberInputWheel = (event) => {
-  event.preventDefault();
   event.currentTarget.blur();
 };
 
@@ -911,11 +910,11 @@ const Dashboard = ({ navigateTo, handleLogout, requestLogout, darkMode, setDarkM
   const hydrateProfileFromQuestionnaire = (questionnaire) => {
     if (!questionnaire) return;
 
-    const resolvedStartingWeight = questionnaire.personalInfo?.startingWeight
-      ?? questionnaire.personalInfo?.weight
-      ?? '';
+    const resolvedStartingWeight = questionnaire.personalInfo?.startingWeight ?? '';
 
-    setStartingWeight((previousValue) => previousValue || resolvedStartingWeight);
+    if (resolvedStartingWeight !== '') {
+      setStartingWeight(resolvedStartingWeight);
+    }
 
     setUserData((prev) => ({
       ...prev,
@@ -1041,6 +1040,9 @@ const Dashboard = ({ navigateTo, handleLogout, requestLogout, darkMode, setDarkM
           setNutritionData(data.nutrition);
           setWorkoutData(data.workout);
           setWeightHistory(data.weightHistory || []);
+          if ((data.weightHistory || []).length > 0) {
+            setStartingWeight(String(data.weightHistory[0].weight));
+          }
         }
       }
     } catch (error) { console.error(error); }
@@ -2656,6 +2658,10 @@ const Dashboard = ({ navigateTo, handleLogout, requestLogout, darkMode, setDarkM
     'messages': { icon: 'fa-envelope', text: 'Üzeneteim', subtitle: 'Admin válaszok és üzenetküldés' },
     'profile': { icon: 'fa-user-circle', text: 'Profil', subtitle: 'Személyes adatok' }
   };
+  const greetingName = userData.personalInfo?.firstName?.trim()
+    || editFormData.fullName.split(' ').slice(1).join(' ').trim()
+    || editFormData.fullName.split(' ')[0]
+    || 'Felhasználó';
 
   if (isAdmin) {
     sectionTitles.admin = { icon: 'fa-user-shield', text: 'Admin', subtitle: 'Üzenetek és felhasználók' };
@@ -2711,7 +2717,7 @@ const Dashboard = ({ navigateTo, handleLogout, requestLogout, darkMode, setDarkM
         {/* DASHBOARD SECTION */}
         <div className={`content-section ${currentSection === 'dashboard' ? 'active' : ''}`}>
           <div className="card">
-            <h2>Üdvözöljük, <span>{editFormData.fullName.split(' ')[0] || 'Felhasználó'}</span>!</h2>
+            <h2>Üdvözöljük, <span>{greetingName}</span>!</h2>
             <div className="ai-box">
               <h3><i className="fas fa-robot"></i> Ajánlás:</h3>
               <p>{workoutData.aiRecommendation || 'Töltsd ki a kérdőívet a személyre szabott tippekért!'}</p>
