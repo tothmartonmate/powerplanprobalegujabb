@@ -9,7 +9,6 @@ import {
   navigateToLogin,
   readInputType,
   resetApp,
-  pause,
   waitForTitle,
   waitForVisible
 } from './helpers.js';
@@ -65,7 +64,6 @@ export async function runSuite(runCase, sharedDriver) {
       await clearAndType(await waitForVisible(driver, By.id('email')), config.email);
       await clearAndType(await waitForVisible(driver, By.id('password')), config.password);
       await click(driver, By.css('button.submit-button'));
-      await pause(800);
       await waitForVisible(driver, By.css('.dashboard-container'), 20000);
       await waitForTitle(driver, 'Dashboard');
       assert.ok(await waitForVisible(driver, By.css('.logout-btn')));

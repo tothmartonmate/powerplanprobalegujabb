@@ -12,8 +12,8 @@ export const config = {
   password: process.env.POWERPLAN_TEST_PASSWORD || 'teszt123',
   browser: process.env.SELENIUM_BROWSER || 'chrome',
   headless: process.env.SELENIUM_HEADLESS === 'true',
-  actionDelayMs: Number(process.env.SELENIUM_ACTION_DELAY_MS || 350),
-  typingDelayMs: Number(process.env.SELENIUM_TYPING_DELAY_MS || 70)
+  actionDelayMs: Number(process.env.SELENIUM_ACTION_DELAY_MS || 180),
+  typingDelayMs: Number(process.env.SELENIUM_TYPING_DELAY_MS || 35)
 };
 
 const DEFAULT_TIMEOUT = 15000;
@@ -104,7 +104,7 @@ export async function buildDriver() {
       .build();
 
     await driver.manage().window().setRect({ width: 1440, height: 1200 });
-    await pause(500);
+    await pause(200);
     return driver;
   }
 
@@ -119,7 +119,7 @@ export async function buildDriver() {
     .build();
 
   await driver.manage().window().setRect({ width: 1440, height: 1200 });
-  await pause(500);
+  await pause(200);
   return driver;
 }
 
@@ -181,7 +181,7 @@ export async function clearAndType(element, value) {
 export async function openApp(driver) {
   await driver.get(config.baseUrl);
   await waitForVisible(driver, By.css('body'));
-  await pause(500);
+  await pause(150);
 }
 
 export async function resetApp(driver) {

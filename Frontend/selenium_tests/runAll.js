@@ -10,6 +10,7 @@ import { runSuite as runNavSuite, suiteName as navSuiteName } from './nav.test.j
 import { runSuite as runWorkoutsSuite, suiteName as workoutsSuiteName } from './workouts.test.js';
 import { runSuite as runNutritionSuite, suiteName as nutritionSuiteName } from './nutrition.test.js';
 import { runSuite as runMessagesSuite, suiteName as messagesSuiteName } from './messages.test.js';
+import { runSuite as runSearchSuite, suiteName as searchSuiteName } from './search.test.js';
 
 const suites = [
   { name: authSuiteName, runSuite: runAuthSuite },
@@ -17,7 +18,8 @@ const suites = [
   { name: navSuiteName, runSuite: runNavSuite },
   { name: workoutsSuiteName, runSuite: runWorkoutsSuite },
   { name: nutritionSuiteName, runSuite: runNutritionSuite },
-  { name: messagesSuiteName, runSuite: runMessagesSuite }
+  { name: messagesSuiteName, runSuite: runMessagesSuite },
+  { name: searchSuiteName, runSuite: runSearchSuite }
 ];
 
 const FRONTEND_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -44,7 +46,7 @@ async function waitForUrl(url, timeoutMs = 30000) {
     if (await isUrlReachable(url)) {
       return true;
     }
-    await sleep(1000);
+    await sleep(500);
   }
 
   return false;
