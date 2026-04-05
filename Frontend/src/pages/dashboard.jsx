@@ -196,8 +196,8 @@ const EXERCISE_DB_WITH_VIDEOS = {
   'Mell': [
     { name: 'Fekvenyomás (Rúd)', video: 'https://www.youtube.com/embed/rT7DgCr-3pg', difficulty: 'intermediate' },
     { name: 'Fekvenyomás (Kézisúlyzó)', video: 'https://www.youtube.com/embed/VmB1G1K7v94', difficulty: 'beginner' },
-    { name: 'Ferde pados nyomás', video: 'https://www.youtube.com/embed/0G2_XV3kHjM', difficulty: 'intermediate' },
-    { name: 'Tárogatás', video: 'https://www.youtube.com/embed/Z57CtMZmK9k', difficulty: 'beginner' },
+    { name: 'Ferde pados nyomás', video: 'https://www.youtube.com/embed/JChVKM4ga4Y', difficulty: 'intermediate' },
+    { name: 'Tárogatás', video: 'https://www.youtube.com/embed/kIpagzRxFPo', difficulty: 'beginner' },
     { name: 'Kábelkereszt', video: 'https://www.youtube.com/embed/taI4XduLpTk', difficulty: 'advanced' },
     { name: 'Ferde pados kézisúlyzós nyomás', video: 'https://www.youtube.com/embed/8iPEnn-ltC8', difficulty: 'intermediate' },
     { name: 'Tolódzkodás mellre döntve', video: 'https://www.youtube.com/embed/2z8JmcrW-As', difficulty: 'advanced' },
@@ -213,14 +213,14 @@ const EXERCISE_DB_WITH_VIDEOS = {
     { name: 'Evezés csigán', video: 'https://www.youtube.com/embed/GZbfZ033f74', difficulty: 'beginner' },
     { name: 'Egykezes evezés kézisúlyzóval', video: 'https://www.youtube.com/embed/pYcpY20QaE8', difficulty: 'beginner' },
     { name: 'T-rudas evezés', video: 'https://www.youtube.com/embed/j3Igk5nyZE4', difficulty: 'advanced' },
-    { name: 'Straight-arm lehúzás', video: 'https://www.youtube.com/embed/ajCCGN2tU3Q', difficulty: 'beginner' },
+    { name: 'Straight-arm lehúzás', video: 'https://www.youtube.com/embed/hAMcfubonDc', difficulty: 'beginner' },
     { name: 'Fordított pec deck', video: 'https://www.youtube.com/embed/EA7u4Q_8HQ0', difficulty: 'beginner' },
     { name: 'Rack pull', video: 'https://www.youtube.com/embed/ZlRrIsoDpKg', difficulty: 'advanced' },
-    { name: 'Gumiszalagos lehúzás', video: 'https://www.youtube.com/embed/Se6jM9YkRkQ', difficulty: 'beginner' }
+    { name: 'Gumiszalagos lehúzás', video: 'https://www.youtube.com/embed/K59OGC4aeQ4', difficulty: 'beginner' }
   ],
   'Láb': [
-    { name: 'Guggolás', video: 'https://www.youtube.com/embed/Ua6C4jQvP7M', difficulty: 'intermediate' },
-    { name: 'Lábnyomás', video: 'https://www.youtube.com/embed/IxLZ0YimtK0', difficulty: 'beginner' },
+    { name: 'Guggolás', video: 'https://www.youtube.com/embed/lRYBbchqxtI', difficulty: 'intermediate' },
+    { name: 'Lábnyomás', video: 'https://www.youtube.com/embed/nDh_BlnLCGc', difficulty: 'beginner' },
     { name: 'Bolgár guggolás', video: 'https://www.youtube.com/embed/2C-uNgKwPLE', difficulty: 'intermediate' },
     { name: 'Combfeszítő', video: 'https://www.youtube.com/embed/YyvSfVjQeL0', difficulty: 'beginner' },
     { name: 'Combhajlító gép', video: 'https://www.youtube.com/embed/1Tq3QdYUuHs', difficulty: 'beginner' },
@@ -229,7 +229,7 @@ const EXERCISE_DB_WITH_VIDEOS = {
     { name: 'Hack guggolás', video: 'https://www.youtube.com/embed/0tn5K9NlCfo', difficulty: 'intermediate' },
     { name: 'Csípőemelés rúddal', video: 'https://www.youtube.com/embed/LM8XHLYJoYs', difficulty: 'intermediate' },
     { name: 'Álló vádliemelés', video: 'https://www.youtube.com/embed/-M4-G8p8fmc', difficulty: 'beginner' },
-    { name: 'Sissy guggolás', video: 'https://www.youtube.com/embed/7S0NjKYlJ7o', difficulty: 'advanced' }
+    { name: 'Sissy guggolás', video: 'https://www.youtube.com/embed/6L-nXAUD7zQ', difficulty: 'advanced' }
   ],
   'Váll': [
     { name: 'Vállból nyomás', video: 'https://www.youtube.com/embed/2yjwXTZQDDI', difficulty: 'intermediate' },
@@ -242,22 +242,22 @@ const EXERCISE_DB_WITH_VIDEOS = {
     { name: 'Upright row', video: 'https://www.youtube.com/embed/jaAV-rD45I0', difficulty: 'intermediate' },
     { name: 'Kábel oldalemelés', video: 'https://www.youtube.com/embed/XPPfnSEATJA', difficulty: 'beginner' },
     { name: 'Gépi vállnyomás', video: 'https://www.youtube.com/embed/WvLMauqrnK8', difficulty: 'beginner' },
-    { name: 'Fordított tárogatás', video: 'https://www.youtube.com/embed/JoCRRZ3zRt0', difficulty: 'beginner' }
+    { name: 'Fordított tárogatás', video: 'https://www.youtube.com/embed/xvEkgGUrGPM', difficulty: 'beginner' }
   ],
   'Bicepsz': [
     { name: 'Bicepsz karhajlítás rúddal', video: 'https://www.youtube.com/embed/ykJmrZ5v0Oo', difficulty: 'beginner' },
     { name: 'Kalapács bicepsz', video: 'https://www.youtube.com/embed/zC3nLlEvin4', difficulty: 'beginner' },
     { name: 'Koncentrált bicepsz', video: 'https://www.youtube.com/embed/0AUGkch3tzc', difficulty: 'intermediate' },
     { name: 'Scott pad bicepsz', video: 'https://www.youtube.com/embed/fIWP-FRFNU0', difficulty: 'intermediate' },
-    { name: 'Kábeles bicepsz hajlítás', video: 'https://www.youtube.com/embed/twD-YGVP4Bk', difficulty: 'beginner' },
+    { name: 'Kábeles bicepsz hajlítás', video: 'https://www.youtube.com/embed/NFzTWp2qpiE', difficulty: 'beginner' },
     { name: 'Váltott karos bicepsz kézisúlyzóval', video: 'https://www.youtube.com/embed/sAq_ocpRh_I', difficulty: 'beginner' },
     { name: 'Fordított fogású bicepsz', video: 'https://www.youtube.com/embed/nRgxYX2Ve9w', difficulty: 'intermediate' },
     { name: 'Ferde padon bicepsz', video: 'https://www.youtube.com/embed/soxrZlIl35U', difficulty: 'intermediate' },
-    { name: 'Spider curl', video: 'https://www.youtube.com/embed/gc36D5qT7N4', difficulty: 'advanced' },
-    { name: 'Preacher machine bicepsz', video: 'https://www.youtube.com/embed/mgEW0Yj3H4Q', difficulty: 'beginner' }
+    { name: 'Spider curl', video: 'https://www.youtube.com/embed/ivS3G35bapw', difficulty: 'advanced' },
+    { name: 'Preacher machine bicepsz', video: 'https://www.youtube.com/embed/Htw-s61mOw0', difficulty: 'beginner' }
   ],
   'Tricepsz': [
-    { name: 'Tricepsz letolás csigán', video: 'https://www.youtube.com/embed/vB5OI2CYLFQ', difficulty: 'beginner' },
+    { name: 'Tricepsz letolás csigán', video: 'https://www.youtube.com/embed/1FjkhpZsaxc', difficulty: 'beginner' },
     { name: 'Letolás francia rúddal', video: 'https://www.youtube.com/embed/d_KZxkY_0cM', difficulty: 'intermediate' },
     { name: 'Koponyazúzó', video: 'https://www.youtube.com/embed/d_KZxkY_0cM', difficulty: 'intermediate' },
     { name: 'Tricepsz nyújtás fej fölött kötéllel', video: 'https://www.youtube.com/embed/_gsUck-7M74', difficulty: 'beginner' },
@@ -269,7 +269,7 @@ const EXERCISE_DB_WITH_VIDEOS = {
     { name: 'Padon tolódzkodás', video: 'https://www.youtube.com/embed/6kALZikXxLc', difficulty: 'beginner' }
   ],
   'Has': [
-    { name: 'Hasprés', video: 'https://www.youtube.com/embed/9Pp5fXF7I9c', difficulty: 'beginner' },
+    { name: 'Hasprés', video: 'https://www.youtube.com/embed/eeJ_CYqSoT4', difficulty: 'beginner' },
     { name: 'Plank', video: 'https://www.youtube.com/embed/pSHjTRCQxIw', difficulty: 'beginner' },
     { name: 'Lábemelés fekve', video: 'https://www.youtube.com/embed/JB2oyawG9KI', difficulty: 'beginner' },
     { name: 'Függeszkedéses lábemelés', video: 'https://www.youtube.com/embed/Pr1ieGZ5atk', difficulty: 'intermediate' },
