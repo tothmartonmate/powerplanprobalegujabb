@@ -476,8 +476,6 @@ const initializeDatabase = async () => {
     }
 };
 
-initializeDatabase();
-
 // -------------------- REGISZTRÁCIÓ --------------------
 app.get('/api/register/check-email', async (req, res) => {
     const email = String(req.query.email || '').trim();
@@ -1480,4 +1478,29 @@ app.delete('/api/admin/users/:targetUserId', async (req, res) => {
 
 // -------------------- SZERVER INDÍTÁSA --------------------
 const PORT = process.env.PORT || 5001;
-app.listen(PORT, '0.0.0.0', () => { console.log(`🚀 Szerver fut a ${PORT}-es porton`); });
+if (require.main === module) {
+    initializeDatabase();
+    app.listen(PORT, '0.0.0.0', () => { console.log(`🚀 Szerver fut a ${PORT}-es porton`); });
+}
+
+module.exports = {
+    app,
+    pool,
+    helpers: {
+        normalizeUserRole,
+        parseJsonArray,
+        normalizeText,
+        getDietPreference,
+        getAllergyFlags,
+        getRecommendedCalories,
+        isMealCompatible,
+        pickDeterministicMeal,
+        buildDailyRecommendations,
+        getExercisePrescription,
+        withExercisePrescriptions,
+        buildWorkoutRecommendation,
+        normalizeWorkoutType,
+        isAdminUser,
+        requireAdmin
+    }
+};
