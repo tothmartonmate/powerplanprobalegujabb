@@ -181,9 +181,32 @@ const preventNumberInputWheel = (event) => {
   event.currentTarget.blur();
 };
 
-const getWeightAxisBounds = (weightValues, startingWeight) => {
+const getDisplayFirstName = (personalInfo, fullName) => {
+  const structuredFirstName = personalInfo?.firstName?.trim();
+  if (structuredFirstName) return structuredFirstName;
+
+  const normalizedFullName = String(fullName || '').trim();
+  if (!normalizedFullName) return 'Felhasználó';
+
+  const nameParts = normalizedFullName.split(/\s+/).filter(Boolean);
+  return nameParts[0] || 'Felhasználó';
+};
+
+const parseFullNameParts = (fullName) => {
+  const nameParts = String(fullName || '').trim().split(/\s+/).filter(Boolean);
+  if (nameParts.length === 0) {
+    return { firstName: '', lastName: '' };
+  }
+
+  return {
+    firstName: nameParts[0] || '',
+    lastName: nameParts.slice(1).join(' ')
+  };
+};
+
+const getWeightAxisBounds = (weightValues, anchorWeight) => {
   const numericWeights = weightValues.filter((value) => Number.isFinite(value));
-  const fallbackWeight = Number.isFinite(startingWeight) ? Math.round(startingWeight) : 80;
+  const fallbackWeight = Number.isFinite(anchorWeight) ? Math.round(anchorWeight) : 80;
   const minWeight = Math.min(...numericWeights, fallbackWeight - WEIGHT_CHART_PADDING_KG);
   const maxWeight = Math.max(...numericWeights, fallbackWeight + WEIGHT_CHART_PADDING_KG);
 
@@ -445,20 +468,43 @@ const GymMap = ({ isActive }) => {
   const [mapMode, setMapMode] = useState('country');
   const [nearbyCenter, setNearbyCenter] = useState(null);
   const [visibleGyms, setVisibleGyms] = useState(ALL_GYMS);
+  const [citySearchQuery, setCitySearchQuery] = useState('');
   const [mapMessage, setMapMessage] = useState(`Az országos nézet mind a ${ALL_GYMS.length} várost és az azokon belüli edzőtermeket egyszerre mutatja Magyarország térképén.`);
   const mapElementRef = useRef(null);
   const leafletMapRef = useRef(null);
   const markerLayerRef = useRef(null);
 
   const openGoogleMaps = () => {
-    const primaryGym = visibleGyms[0];
-    if (primaryGym) {
-      window.open(`https://www.google.com/maps/search/${encodeURIComponent(primaryGym.mapQuery || `${primaryGym.name} ${primaryGym.cityLabel}`)}`, '_blank');
+    if (mapMode === 'nearby' && nearbyCenter) {
+      window.open(`https://www.google.com/maps/search/${encodeURIComponent('edzőterem')}/@${nearbyCenter.lat},${nearbyCenter.lng},12z`, '_blank');
       return;
     }
 
     window.open(`https://www.google.com/maps/search/${encodeURIComponent('edzőterem Magyarország')}/@${HUNGARY_CENTER[0]},${HUNGARY_CENTER[1]},7z`, '_blank');
   };
+
+  const getCityGoogleMapsUrl = (gym) => (
+    `https://www.google.com/maps/search/${encodeURIComponent(gym.mapQuery || `${gym.name} ${gym.cityLabel}`)}/@${gym.lat},${gym.lng},13z`
+  );
+
+  const openCityGymSearch = (gym) => {
+    window.open(getCityGoogleMapsUrl(gym), '_blank');
+  };
+
+  const visibleCityGyms = visibleGyms.map((gym) => ({
+    cityKey: gym.cityKey,
+    cityLabel: gym.cityLabel,
+    countyLabel: gym.countyLabel,
+    mapQuery: gym.mapQuery,
+    distanceKm: gym.distanceKm,
+    lat: gym.lat,
+    lng: gym.lng,
+    name: gym.name
+  }));
+  const normalizedCitySearchQuery = normalizeSearchText(citySearchQuery.trim());
+  const filteredVisibleCityGyms = normalizedCitySearchQuery
+    ? visibleCityGyms.filter((gym) => normalizeSearchText(gym.cityLabel).includes(normalizedCitySearchQuery))
+    : visibleCityGyms;
 
   useEffect(() => {
     if (!mapElementRef.current || leafletMapRef.current) return;
@@ -601,7 +647,7 @@ const GymMap = ({ isActive }) => {
           <p><strong>Vármegye:</strong> ${gym.countyLabel}</p>
           <p><strong>Város:</strong> ${gym.cityLabel}</p>
           ${distanceLine}
-          <a href="https://www.google.com/maps/search/${encodeURIComponent(gym.mapQuery || `${gym.name} ${gym.cityLabel}`)}" target="_blank" rel="noreferrer">Megnyitás Google Mapsben</a>
+          <a href="${getCityGoogleMapsUrl(gym)}" target="_blank" rel="noreferrer">Megnyitás Google Mapsben</a>
         </div>
       `);
 
@@ -739,6 +785,46 @@ const GymMap = ({ isActive }) => {
           <i className="fas fa-directions"></i> Megnyitás Google Mapsben
         </button>
       </div>
+      <div className="gym-city-results">
+        <div className="gym-city-search-row">
+          <label className="gym-city-search-label" htmlFor="gym-city-search">Város keresése</label>
+          <input
+            id="gym-city-search"
+            type="text"
+            className="form-control gym-city-search-input"
+            placeholder="Kezdd el beírni a város nevét..."
+            value={citySearchQuery}
+            onChange={(event) => setCitySearchQuery(event.target.value)}
+          />
+        </div>
+        <div className="gym-city-results-header">
+          <h4>{mapMode === 'nearby' ? 'Közeli városok edzőtermei' : 'Városok edzőtermei'}</h4>
+          <span>{filteredVisibleCityGyms.length} város</span>
+        </div>
+        <div className="gym-city-grid">
+          {filteredVisibleCityGyms.map((gym) => (
+            <div key={`${gym.cityKey}-${gym.mapQuery}`} className="gym-city-card">
+              <div className="gym-city-card-top">
+                <div>
+                  <h5>{gym.cityLabel}</h5>
+                  <p>{gym.countyLabel}</p>
+                </div>
+                {gym.distanceKm !== null && gym.distanceKm !== undefined && (
+                  <span className="gym-city-distance">{formatDistance(gym.distanceKm)}</span>
+                )}
+              </div>
+              <button type="button" className="btn btn-secondary gym-city-open-btn" onClick={() => openCityGymSearch(gym)}>
+                <i className="fas fa-map-location-dot"></i> {gym.cityLabel} edzőtermei
+              </button>
+            </div>
+          ))}
+          {filteredVisibleCityGyms.length === 0 && (
+            <div className="gym-city-empty-state">
+              Nincs találat erre a városnévre.
+            </div>
+          )}
+        </div>
+      </div>
     </div>
   );
 };
@@ -779,6 +865,7 @@ const Toast = ({ message, type, onClose }) => {
 
 const Dashboard = ({ navigateTo, handleLogout, requestLogout, darkMode, setDarkMode }) => {
   const [currentSection, setCurrentSection] = useState('dashboard');
+  const [exerciseSearchQuery, setExerciseSearchQuery] = useState('');
   const [sidebarActive, setSidebarActive] = useState(false);
   const [workoutActive, setWorkoutActive] = useState(false);
   const [workoutTime, setWorkoutTime] = useState(0);
@@ -957,10 +1044,10 @@ const Dashboard = ({ navigateTo, handleLogout, requestLogout, darkMode, setDarkM
 
     if (currentUser) {
       setIsAdmin(hasAdminAccess(currentUser));
-      const nameParts = (currentUser.full_name || '').split(' ');
+      const parsedCurrentUserName = parseFullNameParts(currentUser.full_name);
       setUserData({
         email: currentUser.email || '',
-        personalInfo: { firstName: nameParts[1] || '', lastName: nameParts[0] || '' }
+        personalInfo: { firstName: parsedCurrentUserName.firstName, lastName: parsedCurrentUserName.lastName }
       });
       
       setEditFormData(prev => ({
@@ -1824,6 +1911,7 @@ const Dashboard = ({ navigateTo, handleLogout, requestLogout, darkMode, setDarkM
         })
       });
       if (response.ok) {
+        const parsedEditedName = parseFullNameParts(editFormData.fullName);
         showToast('Profil frissítve!', 'success');
         setIsProfileSaved(true);
         setEditingProfile(false);
@@ -1836,8 +1924,8 @@ const Dashboard = ({ navigateTo, handleLogout, requestLogout, darkMode, setDarkM
           email: editFormData.email,
           personalInfo: {
             ...prev.personalInfo,
-            firstName: editFormData.fullName.split(' ').slice(1).join(' '),
-            lastName: editFormData.fullName.split(' ')[0] || '',
+            firstName: parsedEditedName.firstName,
+            lastName: parsedEditedName.lastName,
             height: editFormData.height,
             weight: editFormData.weight,
             birthDate: editFormData.birthDate
@@ -1849,8 +1937,8 @@ const Dashboard = ({ navigateTo, handleLogout, requestLogout, darkMode, setDarkM
           email: editFormData.email,
           personalInfo: {
             ...(savedQuestionnaire.personalInfo || {}),
-            firstName: editFormData.fullName.split(' ').slice(1).join(' '),
-            lastName: editFormData.fullName.split(' ')[0] || '',
+            firstName: parsedEditedName.firstName,
+            lastName: parsedEditedName.lastName,
             height: editFormData.height,
             weight: editFormData.weight,
             startingWeight: savedQuestionnaire.personalInfo?.startingWeight ?? savedQuestionnaire.personalInfo?.weight ?? '',
@@ -2460,7 +2548,8 @@ const Dashboard = ({ navigateTo, handleLogout, requestLogout, darkMode, setDarkM
     : historicalWeightEntries[0]?.value;
   const weightChartLabels = weightChartEntries.map((item) => item.label);
   const weightChartValues = weightChartEntries.map((item) => item.value);
-  const weightAxisBounds = getWeightAxisBounds(weightChartValues, chartStartingWeight || initialQuestionnaireWeight);
+  const latestChartWeight = weightChartValues[weightChartValues.length - 1] || chartStartingWeight || initialQuestionnaireWeight;
+  const weightAxisBounds = getWeightAxisBounds(weightChartValues, latestChartWeight);
 
   const weightChartData = {
     labels: weightChartLabels,
@@ -2540,6 +2629,19 @@ const Dashboard = ({ navigateTo, handleLogout, requestLogout, darkMode, setDarkM
   };
 
   const localTodayKey = formatLocalDate(new Date());
+  const normalizedExerciseSearchQuery = normalizeSearchText(exerciseSearchQuery.trim());
+  const filteredExerciseCategories = Object.entries(EXERCISE_DB_WITH_VIDEOS)
+    .map(([categoryName, exercises]) => ({
+      categoryName,
+      exercises: normalizedExerciseSearchQuery
+        ? exercises.filter((exercise) => (
+            normalizeSearchText(categoryName).includes(normalizedExerciseSearchQuery)
+            || normalizeSearchText(exercise.name).includes(normalizedExerciseSearchQuery)
+          ))
+        : exercises
+    }))
+    .filter(({ exercises }) => exercises.length > 0);
+
   const localTodayMeals = (nutritionWeekData.meals || []).filter((meal) => meal.consumedDate === localTodayKey);
   const totalCaloriesToday = localTodayMeals.length > 0
     ? localTodayMeals.reduce((sum, meal) => sum + (meal.calories || 0), 0)
@@ -2658,10 +2760,7 @@ const Dashboard = ({ navigateTo, handleLogout, requestLogout, darkMode, setDarkM
     'messages': { icon: 'fa-envelope', text: 'Üzeneteim', subtitle: 'Admin válaszok és üzenetküldés' },
     'profile': { icon: 'fa-user-circle', text: 'Profil', subtitle: 'Személyes adatok' }
   };
-  const greetingName = userData.personalInfo?.firstName?.trim()
-    || editFormData.fullName.split(' ').slice(1).join(' ').trim()
-    || editFormData.fullName.split(' ')[0]
-    || 'Felhasználó';
+  const greetingName = getDisplayFirstName(userData.personalInfo, editFormData.fullName);
 
   if (isAdmin) {
     sectionTitles.admin = { icon: 'fa-user-shield', text: 'Admin', subtitle: 'Üzenetek és felhasználók' };
@@ -2681,7 +2780,7 @@ const Dashboard = ({ navigateTo, handleLogout, requestLogout, darkMode, setDarkM
               <i className="fas fa-user"></i>
             )}
           </div>
-          <div className="user-name">{editFormData.fullName || 'Felhasználó'}</div>
+          <div className="user-name">{greetingName}</div>
           <div className="user-goal">{userData.goals?.mainGoal || 'Cél nincs megadva'}</div>
         </div>
         <div className="nav-menu">
@@ -3079,17 +3178,28 @@ const Dashboard = ({ navigateTo, handleLogout, requestLogout, darkMode, setDarkM
         {/* EXERCISES SECTION */}
         <div className={`content-section ${currentSection === 'exercises' ? 'active' : ''}`}>
           <div className="card">
+            <div className="exercise-search-row">
+              <label className="exercise-search-label" htmlFor="exercise-search">Gyakorlat keresése</label>
+              <input
+                id="exercise-search"
+                type="text"
+                className="form-control exercise-search-input"
+                placeholder="Például: láb, guggolás, mell..."
+                value={exerciseSearchQuery}
+                onChange={(event) => setExerciseSearchQuery(event.target.value)}
+              />
+            </div>
             <div className="exercise-categories">
-              {Object.keys(EXERCISE_DB_WITH_VIDEOS).map(cat => (
-                <div key={cat} className="exercise-category">
+              {filteredExerciseCategories.map(({ categoryName, exercises }) => (
+                <div key={categoryName} className="exercise-category">
                   <h3 onClick={() => {
-                    const content = document.getElementById(`category-${cat}`);
+                    const content = document.getElementById(`category-${categoryName}`);
                     if (content) content.style.display = content.style.display === 'none' ? 'grid' : 'none';
                   }}>
-                    <i className="fas fa-chevron-down"></i> {cat} ({EXERCISE_DB_WITH_VIDEOS[cat].length})
+                    <i className="fas fa-chevron-down"></i> {categoryName} ({exercises.length})
                   </h3>
-                  <div id={`category-${cat}`} className="exercise-category-content" style={{ display: 'grid' }}>
-                    {EXERCISE_DB_WITH_VIDEOS[cat].map((ex, i) => (
+                  <div id={`category-${categoryName}`} className="exercise-category-content" style={{ display: 'grid' }}>
+                    {exercises.map((ex, i) => (
                       <div key={i} className="exercise-video-card">
                         <div className="exercise-video-info">
                           <h4>{ex.name}</h4>
@@ -3105,6 +3215,9 @@ const Dashboard = ({ navigateTo, handleLogout, requestLogout, darkMode, setDarkM
                   </div>
                 </div>
               ))}
+              {filteredExerciseCategories.length === 0 && (
+                <div className="exercise-empty-state">Nincs találat erre a keresésre.</div>
+              )}
             </div>
           </div>
         </div>
