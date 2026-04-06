@@ -2656,6 +2656,13 @@ const Dashboard = ({ navigateTo, handleLogout, requestLogout, darkMode, setDarkM
     }
 
     const interval = setInterval(() => {
+      const isUserMessagesOpen = currentSection === 'messages';
+      const isAdminMessagesOpen = currentSection === 'admin' && adminActivePanel === 'messages';
+
+      if (isUserMessagesOpen || isAdminMessagesOpen) {
+        return;
+      }
+
       loadUserMessages(currentUser.id, token, { silent: true });
       if (hasAdminAccess(currentUser)) {
         loadAdminData(currentUser.id, token, { silent: true });
@@ -2663,7 +2670,7 @@ const Dashboard = ({ navigateTo, handleLogout, requestLogout, darkMode, setDarkM
     }, 8000);
 
     return () => clearInterval(interval);
-  }, [isAdmin]);
+  }, [isAdmin, currentSection, adminActivePanel]);
 
   useEffect(() => {
     if (currentSection !== 'messages' || userMessageTab !== 'incoming' || unreadUserMessagesCount === 0) {

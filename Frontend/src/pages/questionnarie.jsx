@@ -4,6 +4,7 @@ import FeedbackModal from '../components/FeedbackModal';
 
 const MIN_REALISTIC_WEIGHT_KG = 30;
 const MAX_REALISTIC_WEIGHT_KG = 200;
+const getTodayInputDate = () => new Date().toISOString().split('T')[0];
 
 const Questionnaire = ({ navigateTo, setIsLoggedIn }) => {
   const [currentSection, setCurrentSection] = useState(1);
@@ -27,6 +28,7 @@ const Questionnaire = ({ navigateTo, setIsLoggedIn }) => {
     healthInfo: {
       currentInjury: '',
       chronicConditions: [],
+      otherChronicCondition: '',
       medications: ''
     },
     goals: {
@@ -72,10 +74,8 @@ const Questionnaire = ({ navigateTo, setIsLoggedIn }) => {
   const [modalConfig, setModalConfig] = useState(null);
 
   useEffect(() => {
-    // Set max date for birthDate (18 years old)
     const today = new Date();
-    const maxDate = new Date(today.getFullYear() - 18, today.getMonth(), today.getDate());
-    document.getElementById('birthDate')?.setAttribute('max', maxDate.toISOString().split('T')[0]);
+    document.getElementById('birthDate')?.setAttribute('max', today.toISOString().split('T')[0]);
   }, []);
 
   useEffect(() => {
@@ -116,6 +116,10 @@ const Questionnaire = ({ navigateTo, setIsLoggedIn }) => {
 
   const handleInputChange = (e) => {
     const { name, value, type, checked, id } = e.target;
+    const isBirthDateField = name === 'birthDate' || id === 'birthDate';
+    const normalizedValue = isBirthDateField && value
+      ? (value > getTodayInputDate() ? getTodayInputDate() : value)
+      : value;
     
     // Handle nested form data structure
     if (id && id.includes('.')) {
@@ -124,7 +128,7 @@ const Questionnaire = ({ navigateTo, setIsLoggedIn }) => {
         ...prev,
         [category]: {
           ...prev[category],
-          [field]: type === 'checkbox' ? checked : value
+          [field]: type === 'checkbox' ? checked : normalizedValue
         }
       }));
     } else if (name && name.includes('.')) {
@@ -133,7 +137,7 @@ const Questionnaire = ({ navigateTo, setIsLoggedIn }) => {
         ...prev,
         [category]: {
           ...prev[category],
-          [field]: type === 'checkbox' ? checked : value
+          [field]: type === 'checkbox' ? checked : normalizedValue
         }
       }));
     } else {
@@ -142,12 +146,12 @@ const Questionnaire = ({ navigateTo, setIsLoggedIn }) => {
         const newData = { ...prev };
         if (id && id.includes('.')) {
           const [category, field] = id.split('.');
-          newData[category][field] = value;
+          newData[category][field] = normalizedValue;
         } else {
           // Find where to put the value
           for (const category in prev) {
             if (prev[category].hasOwnProperty(name)) {
-              newData[category][name] = value;
+              newData[category][name] = normalizedValue;
               break;
             }
           }
@@ -188,10 +192,21 @@ const Questionnaire = ({ navigateTo, setIsLoggedIn }) => {
         ...prev,
         [category]: {
           ...prev[category],
-          [field]: currentArray
+          [field]: currentArray,
+          ...(category === 'healthInfo' && field === 'chronicConditions' && !currentArray.includes('other')
+            ? { otherChronicCondition: '' }
+            : {})
         }
       };
     });
+
+    if (category === 'healthInfo' && field === 'chronicConditions' && value === 'other' && !checked) {
+      setErrors((prev) => {
+        const nextErrors = { ...prev };
+        delete nextErrors.otherChronicCondition;
+        return nextErrors;
+      });
+    }
   };
 
   const handleSliderChange = (e, category, field) => {
@@ -217,44 +232,54 @@ const Questionnaire = ({ navigateTo, setIsLoggedIn }) => {
   };
 
   const handleSkip = (field) => {
-    setSkipped(prev => ({
-      ...prev,
-      [field]: true
-    }));
+    setSkipped(prev => {
+      const nextSkipped = !prev[field];
 
-    // Clear the field and remove required attribute
-    if (field === 'currentInjury') {
-      setFormData(prev => ({
-        ...prev,
-        healthInfo: {
-          ...prev.healthInfo,
-          currentInjury: ''
+      if (nextSkipped) {
+        if (field === 'currentInjury') {
+          setFormData((currentFormData) => ({
+            ...currentFormData,
+            healthInfo: {
+              ...currentFormData.healthInfo,
+              currentInjury: ''
+            }
+          }));
+        } else if (field === 'chronicConditions') {
+          setFormData((currentFormData) => ({
+            ...currentFormData,
+            healthInfo: {
+              ...currentFormData.healthInfo,
+              chronicConditions: [],
+              otherChronicCondition: ''
+            }
+          }));
+        } else if (field === 'medications') {
+          setFormData((currentFormData) => ({
+            ...currentFormData,
+            healthInfo: {
+              ...currentFormData.healthInfo,
+              medications: ''
+            }
+          }));
         }
-      }));
-    } else if (field === 'chronicConditions') {
-      setFormData(prev => ({
-        ...prev,
-        healthInfo: {
-          ...prev.healthInfo,
-          chronicConditions: []
-        }
-      }));
-    } else if (field === 'medications') {
-      setFormData(prev => ({
-        ...prev,
-        healthInfo: {
-          ...prev.healthInfo,
-          medications: ''
-        }
-      }));
-    }
+      }
 
-    // Update button text
-    const btn = document.getElementById(`skip-${field}`);
-    if (btn) {
-      btn.textContent = 'Kihagyva ✓';
-      btn.disabled = true;
-    }
+      return {
+        ...prev,
+        [field]: nextSkipped
+      };
+    });
+
+    setErrors((prev) => {
+      const nextErrors = { ...prev };
+      if (field === 'currentInjury') delete nextErrors.currentInjury;
+      if (field === 'chronicConditions') {
+        delete nextErrors.chronicConditions;
+        delete nextErrors.otherChronicCondition;
+      }
+      if (field === 'medications') delete nextErrors.medications;
+      return nextErrors;
+    });
   };
 
   const validateSection = (section) => {
@@ -264,13 +289,38 @@ const Questionnaire = ({ navigateTo, setIsLoggedIn }) => {
     if (!sectionEl) return true;
 
     const requiredInputs = sectionEl.querySelectorAll('[required]');
+    const validatedGroups = new Set();
     let isValid = true;
 
     requiredInputs.forEach(input => {
       const isCheckboxGroup = input.type === 'checkbox' && input.name && input.name.includes('[]');
+      const isRadioGroup = input.type === 'radio' && input.name;
+
+      if (isRadioGroup) {
+        if (validatedGroups.has(input.name)) return;
+        validatedGroups.add(input.name);
+
+        const checkedExists = sectionEl.querySelectorAll(`input[name="${input.name}"]:checked`).length > 0;
+        if (!checkedExists) {
+          isValid = false;
+          sectionErrors[input.name] = 'Kérjük, válasszon egy opciót';
+
+          const group = input.closest('.radio-group');
+          if (group) {
+            group.style.animation = 'shake 0.5s';
+            setTimeout(() => {
+              group.style.animation = '';
+            }, 500);
+          }
+        }
+
+        return;
+      }
       
       if (isCheckboxGroup) {
         const name = input.name.replace('[]', '');
+        if (validatedGroups.has(name)) return;
+        validatedGroups.add(name);
         const checkedExists = sectionEl.querySelectorAll(`input[name="${input.name}"]:checked`).length > 0;
         
         if (!checkedExists) {
@@ -289,10 +339,11 @@ const Questionnaire = ({ navigateTo, setIsLoggedIn }) => {
           }
         }
       } else {
-        const value = input.type === 'checkbox' ? input.checked : input.value;
+        const value = input.type === 'checkbox' ? input.checked : String(input.value || '').trim();
         
         if (!value) {
           isValid = false;
+          sectionErrors[input.name || input.id] = 'Ez a mező kötelező';
           input.style.borderColor = 'var(--primary)';
           
           // Add shake animation
@@ -306,6 +357,14 @@ const Questionnaire = ({ navigateTo, setIsLoggedIn }) => {
       }
     });
 
+    if (section === 3 && !skipped.chronicConditions && formData.healthInfo.chronicConditions.includes('other')) {
+      const otherCondition = String(formData.healthInfo.otherChronicCondition || '').trim();
+      if (!otherCondition) {
+        isValid = false;
+        sectionErrors.otherChronicCondition = 'Írd be az egyéb betegséget is.';
+      }
+    }
+
     if (!isValid) {
       setModalConfig({
         type: 'warning',
@@ -317,12 +376,25 @@ const Questionnaire = ({ navigateTo, setIsLoggedIn }) => {
 
     if (section === 1) {
       const weightValue = parseFloat((formData.personalInfo.weight || '').toString().replace(',', '.'));
+      const birthDateValue = String(formData.personalInfo.birthDate || '');
       if (!Number.isFinite(weightValue) || weightValue < MIN_REALISTIC_WEIGHT_KG || weightValue > MAX_REALISTIC_WEIGHT_KG) {
         sectionErrors.weight = `A testsúlynak ${MIN_REALISTIC_WEIGHT_KG} és ${MAX_REALISTIC_WEIGHT_KG} kg között kell lennie.`;
         setModalConfig({
           type: 'warning',
           title: 'Hibás testsúly',
           message: `Adj meg egy valós testsúlyt ${MIN_REALISTIC_WEIGHT_KG} és ${MAX_REALISTIC_WEIGHT_KG} kg között.`,
+          confirmLabel: 'Rendben'
+        });
+        setErrors(sectionErrors);
+        return false;
+      }
+
+      if (birthDateValue && birthDateValue > getTodayInputDate()) {
+        sectionErrors.birthDate = 'A születési dátum nem lehet jövőbeli.';
+        setModalConfig({
+          type: 'warning',
+          title: 'Hibás dátum',
+          message: 'A születési dátum nem lehet későbbi a mai napnál.',
           confirmLabel: 'Rendben'
         });
         setErrors(sectionErrors);
@@ -452,6 +524,13 @@ const Questionnaire = ({ navigateTo, setIsLoggedIn }) => {
     }
     return value + '/10';
   };
+
+  const renderSliderScale = () => (
+    <div className="slider-scale" aria-hidden="true">
+      <span>1</span>
+      <span>10</span>
+    </div>
+  );
 
   return (
     <div className="questionnaire-container" ref={containerRef}>
@@ -591,7 +670,7 @@ const Questionnaire = ({ navigateTo, setIsLoggedIn }) => {
 
           <div className="question-group">
             <div className="form-group">
-              <label htmlFor="trainingFrequency">Milyen gyakran edzel?</label>
+              <label htmlFor="trainingFrequency">Mióta edzel?</label>
               <select
                 className="input-field"
                 id="trainingFrequency"
@@ -770,12 +849,11 @@ const Questionnaire = ({ navigateTo, setIsLoggedIn }) => {
                 </div>
                 <button
                   type="button"
-                  className="skip-btn"
+                  className={`skip-btn ${skipped.currentInjury ? 'is-skipped' : ''}`}
                   id="skip-currentInjury"
                   onClick={() => handleSkip('currentInjury')}
-                  disabled={skipped.currentInjury}
                 >
-                  Kihagyom
+                  {skipped.currentInjury ? 'Kihagyás visszavonása' : 'Kihagyom'}
                 </button>
               </div>
             </div>
@@ -831,14 +909,29 @@ const Questionnaire = ({ navigateTo, setIsLoggedIn }) => {
                 </div>
                 <button
                   type="button"
-                  className="skip-btn"
+                  className={`skip-btn ${skipped.chronicConditions ? 'is-skipped' : ''}`}
                   id="skip-chronicConditions"
                   onClick={() => handleSkip('chronicConditions')}
-                  disabled={skipped.chronicConditions}
                 >
-                  Kihagyom
+                  {skipped.chronicConditions ? 'Kihagyás visszavonása' : 'Kihagyom'}
                 </button>
               </div>
+              {!skipped.chronicConditions && formData.healthInfo.chronicConditions.includes('other') && (
+                <div className="form-group conditional-input-group">
+                  <label htmlFor="otherChronicCondition">Mi az egyéb betegséged?</label>
+                  <input
+                    type="text"
+                    className="input-field"
+                    id="otherChronicCondition"
+                    value={formData.healthInfo.otherChronicCondition}
+                    onChange={handleInputChange}
+                    name="healthInfo.otherChronicCondition"
+                    placeholder="Írd be az egyéb betegséget"
+                    required
+                  />
+                  {errors.otherChronicCondition && <small className="field-error">{errors.otherChronicCondition}</small>}
+                </div>
+              )}
             </div>
 
             <div className="form-group">
@@ -857,12 +950,11 @@ const Questionnaire = ({ navigateTo, setIsLoggedIn }) => {
                 ></textarea>
                 <button
                   type="button"
-                  className="skip-btn"
+                  className={`skip-btn ${skipped.medications ? 'is-skipped' : ''}`}
                   id="skip-medications"
                   onClick={() => handleSkip('medications')}
-                  disabled={skipped.medications}
                 >
-                  Kihagyom
+                  {skipped.medications ? 'Kihagyás visszavonása' : 'Kihagyom'}
                 </button>
               </div>
             </div>
@@ -1263,6 +1355,16 @@ const Questionnaire = ({ navigateTo, setIsLoggedIn }) => {
                   />
                   Kint
                 </label>
+                <label className="radio-label">
+                  <input
+                    type="radio"
+                    name="trainingLocation"
+                    value="not_started"
+                    checked={formData.preferences.trainingLocation === 'not_started'}
+                    onChange={handleInputChange}
+                  />
+                  Nem edzek még
+                </label>
               </div>
             </div>
 
@@ -1353,6 +1455,7 @@ const Questionnaire = ({ navigateTo, setIsLoggedIn }) => {
                   value={formData.selfAssessment.satisfaction}
                   onChange={(e) => handleSliderChange(e, 'selfAssessment', 'satisfaction')}
                 />
+                {renderSliderScale()}
                 <div className="slider-value" id="satisfactionValue">
                   {getSliderDisplay('selfAssessment', 'satisfaction')}
                 </div>
@@ -1371,6 +1474,7 @@ const Questionnaire = ({ navigateTo, setIsLoggedIn }) => {
                   value={formData.selfAssessment.energy}
                   onChange={(e) => handleSliderChange(e, 'selfAssessment', 'energy')}
                 />
+                {renderSliderScale()}
                 <div className="slider-value" id="energyValue">
                   {getSliderDisplay('selfAssessment', 'energy')}
                 </div>

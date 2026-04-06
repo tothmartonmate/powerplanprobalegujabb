@@ -703,6 +703,15 @@ app.post('/api/questionnaire', async (req, res) => {
     const { userId, questionnaire: q } = req.body;
     if (!userId || !q) return res.status(400).json({ error: 'Hiányzó adatok!' });
     try {
+        const normalizedChronicConditions = Array.isArray(q.healthInfo?.chronicConditions)
+            ? q.healthInfo.chronicConditions.filter((condition) => condition && condition !== 'other')
+            : [];
+        const otherChronicCondition = String(q.healthInfo?.otherChronicCondition || '').trim();
+
+        if (otherChronicCondition) {
+            normalizedChronicConditions.push(`other:${otherChronicCondition}`);
+        }
+
         const query = `
             INSERT INTO user_questionnaires (
                 user_id, gender, height_cm, weight_kg, birth_date, activity_level, experience_level, weekly_training_days, training_types,
@@ -720,7 +729,7 @@ app.post('/api/questionnaire', async (req, res) => {
         const values = [
             userId, q.personalInfo.gender, q.personalInfo.height, q.personalInfo.weight, q.personalInfo.birthDate, q.personalInfo.activity,
             q.trainingExperience.frequency, q.trainingExperience.weeklyTraining, JSON.stringify(q.trainingExperience.trainingTypes || []),
-            q.healthInfo.currentInjury || 'no', JSON.stringify(q.healthInfo.chronicConditions || []), q.healthInfo.medications,
+            q.healthInfo.currentInjury || 'no', JSON.stringify(normalizedChronicConditions), q.healthInfo.medications,
             q.goals.mainGoal, q.goals.timeframe, q.goals.specificGoal, JSON.stringify(q.goals.motivation || []), q.goals.workoutPlanRecommendation || 'no',
             q.lifestyle.sleepHours, q.lifestyle.stressLevel, q.lifestyle.sittingTime,
             JSON.stringify(q.nutrition.diet || []), q.nutrition.allergies, q.nutrition.dietControl, q.nutrition.dietRecommendations,
@@ -774,6 +783,11 @@ app.get('/api/questionnaire/:userId', async (req, res) => {
         const nameParts = String(row.full_name || '').trim().split(/\s+/).filter(Boolean);
         const firstName = nameParts.length > 1 ? nameParts.slice(1).join(' ') : '';
         const lastName = nameParts[0] || '';
+        const parsedChronicConditions = parseJsonArray(row.chronic_conditions);
+        const otherChronicCondition = parsedChronicConditions.find((condition) => String(condition).startsWith('other:')) || '';
+        const chronicConditions = parsedChronicConditions
+            .map((condition) => (String(condition).startsWith('other:') ? 'other' : condition))
+            .filter(Boolean);
 
         res.status(200).json({
             success: true,
@@ -796,7 +810,8 @@ app.get('/api/questionnaire/:userId', async (req, res) => {
                 },
                 healthInfo: {
                     currentInjury: row.current_injury || '',
-                    chronicConditions: parseJsonArray(row.chronic_conditions),
+                    chronicConditions: [...new Set(chronicConditions)],
+                    otherChronicCondition: otherChronicCondition ? otherChronicCondition.slice(6) : '',
                     medications: row.medications || ''
                 },
                 goals: {

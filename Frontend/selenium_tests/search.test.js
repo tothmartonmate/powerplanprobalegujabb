@@ -59,6 +59,16 @@ async function ensureMainWindow(driver, mainHandle) {
 export async function runSuite(runCase, sharedDriver) {
   const driver = sharedDriver || await buildDriver();
   const ownsDriver = !sharedDriver;
+  let exerciseDriver = null;
+
+  const getExerciseDriver = async () => {
+    if (!exerciseDriver) {
+      exerciseDriver = await buildDriver();
+      await ensureLoggedIn(exerciseDriver);
+    }
+
+    return exerciseDriver;
+  };
 
   try {
     await ensureLoggedIn(driver);
@@ -133,15 +143,17 @@ export async function runSuite(runCase, sharedDriver) {
     });
 
     await runCase('A gyakorlat keresőmező megjelenik', async () => {
-      await clickSidebarSection(driver, 'Gyakorlatok');
-      assert.ok(await waitForVisible(driver, By.id('exercise-search')));
+      const activeDriver = await getExerciseDriver();
+      await clickSidebarSection(activeDriver, 'Gyakorlatok');
+      assert.ok(await waitForVisible(activeDriver, By.id('exercise-search')));
     });
 
     await runCase('A gyakorlat kereső a bicepsz kategóriára szűr', async () => {
-      await clickSidebarSection(driver, 'Gyakorlatok');
-      const exerciseSearch = await waitForVisible(driver, By.id('exercise-search'));
+      const activeDriver = await getExerciseDriver();
+      await clickSidebarSection(activeDriver, 'Gyakorlatok');
+      const exerciseSearch = await waitForVisible(activeDriver, By.id('exercise-search'));
       await clearAndType(exerciseSearch, 'bicepsz');
-      const categoryHeaders = await driver.findElements(By.css('.exercise-category h3'));
+      const categoryHeaders = await activeDriver.findElements(By.css('.exercise-category h3'));
       assert.ok(categoryHeaders.length >= 1);
       for (const header of categoryHeaders) {
         assert.ok(normalizeText(await header.getText()).includes('bicepsz'));
@@ -149,10 +161,11 @@ export async function runSuite(runCase, sharedDriver) {
     });
 
     await runCase('A gyakorlat kereső név alapján szűri a találatokat', async () => {
-      await clickSidebarSection(driver, 'Gyakorlatok');
-      const exerciseSearch = await waitForVisible(driver, By.id('exercise-search'));
+      const activeDriver = await getExerciseDriver();
+      await clickSidebarSection(activeDriver, 'Gyakorlatok');
+      const exerciseSearch = await waitForVisible(activeDriver, By.id('exercise-search'));
       await clearAndType(exerciseSearch, 'guggolas');
-      const visibleCards = await driver.findElements(By.css('.exercise-video-card h4'));
+      const visibleCards = await activeDriver.findElements(By.css('.exercise-video-card h4'));
       assert.ok(visibleCards.length >= 1);
       for (const card of visibleCards) {
         assert.ok(normalizeText(await card.getText()).includes('guggolas'));
@@ -160,13 +173,18 @@ export async function runSuite(runCase, sharedDriver) {
     });
 
     await runCase('A gyakorlat kereső üres állapotot mutat ismeretlen kifejezésre', async () => {
-      await clickSidebarSection(driver, 'Gyakorlatok');
-      const exerciseSearch = await waitForVisible(driver, By.id('exercise-search'));
+      const activeDriver = await getExerciseDriver();
+      await clickSidebarSection(activeDriver, 'Gyakorlatok');
+      const exerciseSearch = await waitForVisible(activeDriver, By.id('exercise-search'));
       await clearAndType(exerciseSearch, 'nincsgyakorlat');
-      const emptyState = await waitForVisible(driver, By.css('.exercise-empty-state'));
+      const emptyState = await waitForVisible(activeDriver, By.css('.exercise-empty-state'));
       assert.ok((await emptyState.getText()).includes('Nincs találat'));
     });
   } finally {
+    if (exerciseDriver) {
+      await exerciseDriver.quit();
+    }
+
     if (ownsDriver) {
       await driver.quit();
     }
