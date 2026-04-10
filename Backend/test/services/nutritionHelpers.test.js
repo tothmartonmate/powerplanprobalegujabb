@@ -116,7 +116,7 @@ describe('server.js nutrition helpers', () => {
     });
 
     describe('buildDailyRecommendations', () => {
-        it('returns an empty recommendation set when the user opted out', () => {
+        it('still returns a full fallback recommendation set when the user previously opted out', () => {
             const result = helpers.buildDailyRecommendations({
                 userId: 5,
                 goal: 'fitness',
@@ -126,8 +126,8 @@ describe('server.js nutrition helpers', () => {
                 wantsDietRecommendations: 'no'
             });
 
-            expect(result.recommendations).toEqual([]);
-            expect(result.calorieTarget).toBe(0);
+            expect(result.recommendations).toHaveLength(4);
+            expect(result.calorieTarget).toBeGreaterThan(0);
         });
 
         it('builds four daily meal recommendations with labels and calories', () => {
@@ -142,7 +142,7 @@ describe('server.js nutrition helpers', () => {
 
             expect(result.recommendations).toHaveLength(4);
             expect(result.recommendations.every((meal) => meal.mealTypeLabel && meal.calories > 0)).toBe(true);
-            expect(result.recommendationNote).toContain('24 óránként');
+            expect(result.recommendationNote).toContain('étrendi ajánlást');
         });
 
         it('builds the standard ordered meal types for active recommendations', () => {
@@ -157,6 +157,92 @@ describe('server.js nutrition helpers', () => {
 
             expect(result.calorieTarget).toBe(3200);
             expect(result.recommendations.map((meal) => meal.meal_type)).toEqual(['breakfast', 'lunch', 'dinner', 'snack']);
+        });
+
+        it('changes each meal type from one day to the next when alternatives exist', () => {
+            const firstDay = helpers.buildDailyRecommendations({
+                userId: 9,
+                goal: 'fitness',
+                weightKg: 78,
+                dietTypes: '["balanced"]',
+                allergies: '',
+                wantsDietRecommendations: 'yes',
+                dateInput: '2026-04-07'
+            });
+            const secondDay = helpers.buildDailyRecommendations({
+                userId: 9,
+                goal: 'fitness',
+                weightKg: 78,
+                dietTypes: '["balanced"]',
+                allergies: '',
+                wantsDietRecommendations: 'yes',
+                dateInput: '2026-04-08'
+            });
+
+            firstDay.recommendations.forEach((meal, index) => {
+                expect(secondDay.recommendations[index].name).not.toBe(meal.name);
+            });
+        });
+    });
+
+    describe('buildWeeklyRecommendations', () => {
+        it('builds all seven days for the selected week', () => {
+            const result = helpers.buildWeeklyRecommendations({
+                userId: 12,
+                goal: 'fitness',
+                weightKg: 74,
+                dietTypes: '["balanced"]',
+                allergies: '',
+                wantsDietRecommendations: 'yes',
+                startDate: '2026-04-07'
+            });
+
+            expect(result).toHaveLength(7);
+            expect(result.every((day) => day.recommendations.length === 4)).toBe(true);
+        });
+
+        it('builds fallback recommendations for all seven days even when the user opted out earlier', () => {
+            const result = helpers.buildWeeklyRecommendations({
+                userId: 21,
+                goal: 'fitness',
+                weightKg: 74,
+                dietTypes: '[]',
+                allergies: '',
+                wantsDietRecommendations: 'no',
+                startDate: '2026-04-14'
+            });
+
+            expect(result).toHaveLength(7);
+            expect(result.every((day) => day.calorieTarget > 0)).toBe(true);
+            expect(result.every((day) => day.recommendations.length === 4)).toBe(true);
+        });
+
+        it('keeps consecutive days different even across week boundaries', () => {
+            const currentWeek = helpers.buildWeeklyRecommendations({
+                userId: 15,
+                goal: 'fitness',
+                weightKg: 80,
+                dietTypes: '["balanced"]',
+                allergies: '',
+                wantsDietRecommendations: 'yes',
+                startDate: '2026-04-07'
+            });
+            const nextWeek = helpers.buildWeeklyRecommendations({
+                userId: 15,
+                goal: 'fitness',
+                weightKg: 80,
+                dietTypes: '["balanced"]',
+                allergies: '',
+                wantsDietRecommendations: 'yes',
+                startDate: '2026-04-14'
+            });
+
+            const sundayMeals = currentWeek[currentWeek.length - 1].recommendations;
+            const mondayMeals = nextWeek[0].recommendations;
+
+            sundayMeals.forEach((meal, index) => {
+                expect(mondayMeals[index].name).not.toBe(meal.name);
+            });
         });
     });
 });

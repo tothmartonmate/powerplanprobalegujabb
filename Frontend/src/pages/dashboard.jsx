@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { flushSync } from 'react-dom';
 import { Chart as ChartJS, CategoryScale, LinearScale, RadialLinearScale, PointElement, LineElement, BarElement, Title, Tooltip, Legend, Filler } from 'chart.js';
 import { Line, Bar, Radar } from 'react-chartjs-2';
 import * as L from 'leaflet';
@@ -163,6 +164,74 @@ const formatRecommendationCardDateLabel = (dateInput) => {
     day: 'numeric',
     weekday: 'short'
   });
+};
+
+const DEFAULT_RECOMMENDATION_MEAL_ORDER = ['breakfast', 'lunch', 'dinner', 'snack'];
+const DEFAULT_RECOMMENDATION_MEAL_LABELS = {
+  breakfast: 'Reggeli',
+  lunch: 'Ebéd',
+  dinner: 'Vacsora',
+  snack: 'Snack'
+};
+
+const normalizeRecommendationMeals = (meals) => {
+  if (!Array.isArray(meals)) return [];
+
+  return meals
+    .filter(Boolean)
+    .map((meal, index) => {
+      const fallbackMealType = DEFAULT_RECOMMENDATION_MEAL_ORDER[index] || `meal-${index}`;
+      const mealType = meal.meal_type || fallbackMealType;
+
+      return {
+        ...meal,
+        meal_type: mealType,
+        mealTypeLabel: meal.mealTypeLabel || DEFAULT_RECOMMENDATION_MEAL_LABELS[mealType] || mealType
+      };
+    });
+};
+
+const buildNutritionRecommendationDay = ({
+  date,
+  dayPlan,
+  fallbackRecommendations,
+  fallbackCalorieTarget,
+  fallbackNote,
+  isLoading
+}) => {
+  const normalizedDate = formatLocalDate(date);
+  const normalizedRecommendations = normalizeRecommendationMeals(
+    dayPlan?.recommendations?.length ? dayPlan.recommendations : fallbackRecommendations
+  );
+
+  return {
+    recommendationDate: dayPlan?.recommendationDate || normalizedDate,
+    recommendationDateLabel: dayPlan?.recommendationDateLabel || formatRecommendationCardDateLabel(date),
+    calorieTarget: dayPlan?.calorieTarget || fallbackCalorieTarget || 0,
+    recommendations: normalizedRecommendations,
+    recommendationNote: dayPlan?.recommendationNote || fallbackNote || (isLoading ? 'A kiválasztott hét ajánlásai betöltés alatt vannak.' : '')
+  };
+};
+
+const getNutritionRecommendationWeekKey = (weeklyRecommendations, fallbackDate) => {
+  if (Array.isArray(weeklyRecommendations) && weeklyRecommendations.length > 0) {
+    const firstRecommendationDate = weeklyRecommendations[0]?.recommendationDate;
+    if (firstRecommendationDate) {
+      return formatLocalDate(getStartOfWeek(firstRecommendationDate));
+    }
+  }
+
+  return fallbackDate ? formatLocalDate(getStartOfWeek(fallbackDate)) : '';
+};
+
+const findNutritionRecommendationWeek = (recommendationWeeks, selectedDateKey, selectedWeekKey) => {
+  if (recommendationWeeks[selectedWeekKey]) {
+    return recommendationWeeks[selectedWeekKey];
+  }
+
+  return Object.values(recommendationWeeks).find((week) => (
+    Array.isArray(week) && week.some((day) => day?.recommendationDate === selectedDateKey)
+  )) || [];
 };
 
 const safeFitBounds = (map, bounds, fallbackToHungary = true) => {
@@ -1172,38 +1241,43 @@ const Dashboard = ({ navigateTo, handleLogout, requestLogout, darkMode, setDarkM
   const hasAdminAccess = (user) => getUserRole(user) === 'admin' || Boolean(user?.is_admin);
   const isUnreadForAdmin = (message) => {
     if (message?.origin === 'admin') return false;
-    if (message?.isUnreadForAdmin) return true;
 
     const activityAt = getTimestampValue(message?.createdAt);
     const seenAt = getTimestampValue(adminMessagesSeenAt);
     const backendReadAt = getTimestampValue(message?.adminReadAt);
     const seenId = Number(adminMessagesSeenId) || 0;
     const messageId = Number(message?.id) || 0;
+    const backendUnread = Boolean(message?.isUnreadForAdmin);
 
     if (backendReadAt >= activityAt && activityAt > 0) return false;
+    if (messageId > 0 && seenId >= messageId) return false;
+    if (seenAt > 0 && activityAt > 0 && seenAt >= activityAt) return false;
     if (messageId > seenId) return true;
-    return activityAt > seenAt;
+    return backendUnread || activityAt > seenAt;
   };
   const isUnreadForUser = (message) => {
-    if (message?.isUnreadForUser) return true;
-
     const seenAt = getTimestampValue(userMessagesSeenAt);
     const backendReadAt = getTimestampValue(message?.userReadAt);
     const seenId = Number(userMessagesSeenId) || 0;
     const messageId = Number(message?.id) || 0;
+    const backendUnread = Boolean(message?.isUnreadForUser);
 
     if (message?.origin === 'admin') {
       const activityAt = getTimestampValue(message?.createdAt);
       if (backendReadAt >= activityAt && activityAt > 0) return false;
+      if (messageId > 0 && seenId >= messageId) return false;
+      if (seenAt > 0 && activityAt > 0 && seenAt >= activityAt) return false;
       if (messageId > seenId) return true;
-      return activityAt > seenAt;
+      return backendUnread || activityAt > seenAt;
     }
 
     if (!message?.adminReply) return false;
 
     const activityAt = getTimestampValue(message?.repliedAt || message?.createdAt);
     if (backendReadAt >= activityAt && activityAt > 0) return false;
-    return activityAt > seenAt;
+    if (messageId > 0 && seenId >= messageId) return false;
+    if (seenAt > 0 && activityAt > 0 && seenAt >= activityAt) return false;
+    return backendUnread || activityAt > seenAt;
   };
   const incomingAdminMessages = adminMessages.filter((message) => message.origin !== 'admin');
   const sentAdminMessages = adminMessages.filter((message) => message.origin === 'admin');
@@ -1215,6 +1289,7 @@ const Dashboard = ({ navigateTo, handleLogout, requestLogout, darkMode, setDarkM
   const [userData, setUserData] = useState({});
   const [workoutData, setWorkoutData] = useState({ weeklyPlan: [], stats: {}, aiRecommendation: '', recommendedPlan: [], recommendationNote: '' });
   const [nutritionData, setNutritionData] = useState({ todayMeals: [], dailyCalories: 0, recommendations: [], weeklyRecommendations: [], calorieTarget: 2500, recommendationDate: '', recommendationNote: '' });
+  const [nutritionRecommendationWeeks, setNutritionRecommendationWeeks] = useState({});
   const [nutritionWeekData, setNutritionWeekData] = useState({ dailyTotals: [], meals: [] });
   const [weightHistory, setWeightHistory] = useState([]);
   const [nutritionSelectedDate, setNutritionSelectedDate] = useState(new Date());
@@ -1385,11 +1460,22 @@ const Dashboard = ({ navigateTo, handleLogout, requestLogout, darkMode, setDarkM
         const data = await response.json();
         if (data.success) {
           setNutritionData(data.nutrition);
+          const recommendationWeekKey = getNutritionRecommendationWeekKey(
+            data.nutrition?.weeklyRecommendations,
+            data.nutrition?.recommendationDate || referenceDate
+          );
+          if (recommendationWeekKey && Array.isArray(data.nutrition?.weeklyRecommendations)) {
+            setNutritionRecommendationWeeks((prev) => ({
+              ...prev,
+              [recommendationWeekKey]: data.nutrition.weeklyRecommendations
+            }));
+          }
           setWorkoutData(data.workout);
           setWeightHistory(data.weightHistory || []);
           if ((data.weightHistory || []).length > 0) {
             setStartingWeight(String(data.weightHistory[0].weight));
           }
+          return data;
         }
       }
     } catch (error) {
@@ -1397,6 +1483,8 @@ const Dashboard = ({ navigateTo, handleLogout, requestLogout, darkMode, setDarkM
     } finally {
       setNutritionRecommendationLoading(false);
     }
+
+    return null;
   };
 
   const loadProfileImage = async (userId, token) => {
@@ -1677,6 +1765,7 @@ const Dashboard = ({ navigateTo, handleLogout, requestLogout, darkMode, setDarkM
       });
 
       if (!response.ok) return;
+      loadUserMessages(userId, token, { silent: true });
     } catch (error) {
       console.error('Felhasználói üzenetek olvasottra jelölési hiba:', error);
     }
@@ -1708,6 +1797,7 @@ const Dashboard = ({ navigateTo, handleLogout, requestLogout, darkMode, setDarkM
       });
 
       if (!response.ok) return;
+      loadAdminData(adminUserId, token, { silent: true });
     } catch (error) {
       console.error('Admin üzenetek olvasottra jelölési hiba:', error);
     }
@@ -2134,8 +2224,14 @@ const Dashboard = ({ navigateTo, handleLogout, requestLogout, darkMode, setDarkM
       return;
     }
 
+    const selectedDateKey = formatLocalDate(nutritionSelectedDate);
+    const selectedWeekKey = formatLocalDate(getStartOfWeek(nutritionSelectedDate));
+    if (findNutritionRecommendationWeek(nutritionRecommendationWeeks, selectedDateKey, selectedWeekKey).length > 0) {
+      return;
+    }
+
     loadDashboardData(currentUser.id, token, nutritionSelectedDate);
-  }, [currentSection, nutritionSelectedDate]);
+  }, [currentSection, nutritionSelectedDate, nutritionRecommendationWeeks]);
 
   // Profilkép feltöltés (adatbázisba)
   const handleImageUpload = async (e) => {
@@ -2627,20 +2723,26 @@ const Dashboard = ({ navigateTo, handleLogout, requestLogout, darkMode, setDarkM
     }
   };
 
-  const setNutritionRecommendationDate = (nextDateInput) => {
+  const setNutritionRecommendationDate = async (nextDateInput) => {
     const nextDate = nextDateInput instanceof Date ? new Date(nextDateInput) : new Date(nextDateInput);
     if (Number.isNaN(nextDate.getTime())) {
       return;
     }
 
-    setNutritionSelectedDate(nextDate);
-    loadNutritionWeek(nextDate);
-
     const token = localStorage.getItem('powerplan_token');
     const currentUser = JSON.parse(localStorage.getItem('powerplan_current_user') || '{}');
-    if (currentSection === 'nutrition' && currentUser?.id && currentUser.id !== 'demo-999' && token) {
-      loadDashboardData(currentUser.id, token, nextDate);
+    const nextDateKey = formatLocalDate(nextDate);
+    const nextWeekKey = formatLocalDate(getStartOfWeek(nextDate));
+    const hasCachedWeek = findNutritionRecommendationWeek(nutritionRecommendationWeeks, nextDateKey, nextWeekKey).length > 0;
+
+    if (!hasCachedWeek && currentSection === 'nutrition' && currentUser?.id && currentUser.id !== 'demo-999' && token) {
+      await loadDashboardData(currentUser.id, token, nextDate);
     }
+
+    await loadNutritionWeek(nextDate);
+    flushSync(() => {
+      setNutritionSelectedDate(nextDate);
+    });
   };
 
   const shiftNutritionRecommendationWeek = (weekOffset) => {
@@ -3103,11 +3205,8 @@ const Dashboard = ({ navigateTo, handleLogout, requestLogout, darkMode, setDarkM
       return undefined;
     }
 
-    const timeoutId = setTimeout(() => {
-      markUserMessagesAsRead(currentUser.id, token);
-    }, 1800);
-
-    return () => clearTimeout(timeoutId);
+    markUserMessagesAsRead(currentUser.id, token);
+    return undefined;
   }, [currentSection, userMessageTab, unreadUserMessagesCount]);
 
   useEffect(() => {
@@ -3123,11 +3222,8 @@ const Dashboard = ({ navigateTo, handleLogout, requestLogout, darkMode, setDarkM
       return undefined;
     }
 
-    const timeoutId = setTimeout(() => {
-      markAdminMessagesAsRead(currentUser.id, token);
-    }, 1800);
-
-    return () => clearTimeout(timeoutId);
+    markAdminMessagesAsRead(currentUser.id, token);
+    return undefined;
   }, [currentSection, adminActivePanel, adminMessageTab, unreadAdminMessagesCount]);
 
   const formatTime = (seconds) => {
@@ -3321,29 +3417,40 @@ const Dashboard = ({ navigateTo, handleLogout, requestLogout, darkMode, setDarkM
   const displayedCalories = isViewingTodayNutrition ? totalCaloriesToday : selectedNutritionCalories;
   const displayedCalorieProgress = (displayedCalories / calorieGoal) * 100;
   const nutritionWeekStart = getStartOfWeek(nutritionSelectedDate);
+  const selectedNutritionWeekKey = formatLocalDate(nutritionWeekStart);
+  const selectedWeekRecommendations = findNutritionRecommendationWeek(
+    nutritionRecommendationWeeks,
+    selectedNutritionDateKey,
+    selectedNutritionWeekKey
+  )
+    || (selectedNutritionWeekKey === formatLocalDate(getStartOfWeek(nutritionData.recommendationDate))
+      ? (weeklyNutritionRecommendations || [])
+      : []);
   const nutritionRecommendationPreviewDays = Array.from({ length: 7 }, (_, index) => {
     const currentDate = new Date(nutritionWeekStart);
     currentDate.setDate(nutritionWeekStart.getDate() + index);
     const currentDateKey = formatLocalDate(currentDate);
-    const matchingRecommendation = weeklyNutritionRecommendations.find((day) => day.recommendationDate === currentDateKey);
+    const matchingRecommendation = selectedWeekRecommendations.find((day) => day.recommendationDate === currentDateKey);
+    const shouldUseSelectedDayFallback = nutritionData.recommendationDate === currentDateKey;
 
-    return matchingRecommendation || {
-      recommendationDate: currentDateKey,
-      recommendationDateLabel: formatRecommendationCardDateLabel(currentDate),
-      calorieTarget: nutritionData.calorieTarget || 0,
-      recommendations: [],
-      recommendationNote: nutritionRecommendationLoading ? 'A kiválasztott hét ajánlásai betöltés alatt vannak.' : ''
-    };
+    return buildNutritionRecommendationDay({
+      date: currentDate,
+      dayPlan: matchingRecommendation,
+      fallbackRecommendations: shouldUseSelectedDayFallback ? normalizeRecommendationMeals(nutritionData.recommendations || []) : [],
+      fallbackCalorieTarget: shouldUseSelectedDayFallback ? (nutritionData.calorieTarget || 0) : 0,
+      fallbackNote: shouldUseSelectedDayFallback ? (nutritionData.recommendationNote || '') : '',
+      isLoading: nutritionRecommendationLoading
+    });
   });
   const activeRecommendationDay = nutritionRecommendationPreviewDays.find((day) => day.recommendationDate === selectedNutritionDateKey)
     || nutritionRecommendationPreviewDays[0]
-    || {
-      recommendationDate: selectedNutritionDateKey,
-      recommendationDateLabel: formatHungarianLongDate(nutritionSelectedDate),
-      calorieTarget: nutritionData.calorieTarget,
-      recommendations: [],
-      recommendationNote: ''
-    };
+    || buildNutritionRecommendationDay({
+      date: nutritionSelectedDate,
+      fallbackRecommendations: normalizeRecommendationMeals(nutritionData.recommendations || []),
+      fallbackCalorieTarget: nutritionData.calorieTarget || 0,
+      fallbackNote: nutritionData.recommendationNote || '',
+      isLoading: nutritionRecommendationLoading
+    });
   const nutritionDailyTotals = Array.from({ length: 7 }, (_, index) => {
     const currentDate = new Date(nutritionWeekStart);
     currentDate.setDate(nutritionWeekStart.getDate() + index);
@@ -3929,47 +4036,51 @@ const Dashboard = ({ navigateTo, handleLogout, requestLogout, darkMode, setDarkM
         {/* EXERCISES SECTION */}
         <div className={`content-section ${currentSection === 'exercises' ? 'active' : ''}`}>
           <div className="card">
-            <div className="exercise-search-row">
-              <label className="exercise-search-label" htmlFor="exercise-search">Gyakorlat keresése</label>
-              <input
-                id="exercise-search"
-                type="text"
-                className="form-control exercise-search-input"
-                placeholder="Például: láb, guggolás, mell..."
-                value={exerciseSearchQuery}
-                onChange={(event) => setExerciseSearchQuery(event.target.value)}
-              />
-            </div>
-            <div className="exercise-categories">
-              {filteredExerciseCategories.map(({ categoryName, exercises }) => (
-                <div key={categoryName} className="exercise-category">
-                  <h3 onClick={() => {
-                    const content = document.getElementById(`category-${categoryName}`);
-                    if (content) content.style.display = content.style.display === 'none' ? 'grid' : 'none';
-                  }}>
-                    <i className="fas fa-chevron-down"></i> {categoryName} ({exercises.length})
-                  </h3>
-                  <div id={`category-${categoryName}`} className="exercise-category-content" style={{ display: 'grid' }}>
-                    {exercises.map((ex, i) => (
-                      <div key={i} className="exercise-video-card">
-                        <div className="exercise-video-info">
-                          <h4>{ex.name}</h4>
-                          <span className={`difficulty ${ex.difficulty}`}>
-                            {ex.difficulty === 'beginner' ? 'Kezdő' : ex.difficulty === 'intermediate' ? 'Haladó' : 'Profi'}
-                          </span>
-                        </div>
-                        <div className="video-container">
-                          <iframe src={ex.video} title={ex.name} frameBorder="0" allowFullScreen></iframe>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
+            {currentSection === 'exercises' && (
+              <>
+                <div className="exercise-search-row">
+                  <label className="exercise-search-label" htmlFor="exercise-search">Gyakorlat keresése</label>
+                  <input
+                    id="exercise-search"
+                    type="text"
+                    className="form-control exercise-search-input"
+                    placeholder="Például: láb, guggolás, mell..."
+                    value={exerciseSearchQuery}
+                    onChange={(event) => setExerciseSearchQuery(event.target.value)}
+                  />
                 </div>
-              ))}
-              {filteredExerciseCategories.length === 0 && (
-                <div className="exercise-empty-state">Nincs találat erre a keresésre.</div>
-              )}
-            </div>
+                <div className="exercise-categories">
+                  {filteredExerciseCategories.map(({ categoryName, exercises }) => (
+                    <div key={categoryName} className="exercise-category">
+                      <h3 onClick={() => {
+                        const content = document.getElementById(`category-${categoryName}`);
+                        if (content) content.style.display = content.style.display === 'none' ? 'grid' : 'none';
+                      }}>
+                        <i className="fas fa-chevron-down"></i> {categoryName} ({exercises.length})
+                      </h3>
+                      <div id={`category-${categoryName}`} className="exercise-category-content" style={{ display: 'grid' }}>
+                        {exercises.map((ex, i) => (
+                          <div key={i} className="exercise-video-card">
+                            <div className="exercise-video-info">
+                              <h4>{ex.name}</h4>
+                              <span className={`difficulty ${ex.difficulty}`}>
+                                {ex.difficulty === 'beginner' ? 'Kezdő' : ex.difficulty === 'intermediate' ? 'Haladó' : 'Profi'}
+                              </span>
+                            </div>
+                            <div className="video-container">
+                              <iframe src={ex.video} title={ex.name} frameBorder="0" allowFullScreen loading="lazy"></iframe>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                  {filteredExerciseCategories.length === 0 && (
+                    <div className="exercise-empty-state">Nincs találat erre a keresésre.</div>
+                  )}
+                </div>
+              </>
+            )}
           </div>
         </div>
 
