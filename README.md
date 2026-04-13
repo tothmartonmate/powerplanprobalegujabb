@@ -7,14 +7,14 @@ PowerPlan egy összetett, modern Full-Stack webalkalmazás, amely a személyre s
 
 📑 Tartalomjegyzék
 
-1. A projekt célkitűzése
-2. Fő funkciók és modulok
-3. Technológiai stack
-4. Csapatmunka és feladatkörök
-5. Adatbázis architektúra
-6. Szoftvertesztelés (QA)
-7. Fejlesztési eszközök
-8. Környezet és futtatás
+1. [A projekt célkitűzése](#1-a-projekt-célkitűzése)
+2. [Fő funkciók és modulok](#2-fő-funkciók-és-modulok)
+3. [Technológiai stack](#3-technológiai-stack)
+4. [Csapatmunka és feladatkörök](#4-csapatmunka-és-feladatkörök)
+5. [Adatbázis architektúra](#5-adatbázis-architektúra)
+6. [Szoftvertesztelés (QA)](#6-szoftvertesztelés-qa)
+7. [Fejlesztési eszközök](#7-fejlesztési-eszközök)
+8. [Környezet és futtatás](#8-környezet-és-futtatás)
 
 ---
 
