@@ -1,74 +1,33 @@
 # PowerPlan
 
-PowerPlan egy edzőtermi webalkalmazás React frontenddel, Express backenddel és MySQL adatbázissal.
+PowerPlan egy edzéstervező és életmód-követő webalkalmazás React frontenddel, Express backenddel és MySQL adatbázissal.
 
-Ez az útmutató a teljes alkalmazás elindításához, ellenőrzéséhez és teszteléséhez készült.
+Ez a leírás úgy készült, hogy teljesen kezdőként is végig lehessen menni rajta, és biztosan el lehessen indítani a projektet.
 
-## Gyors használat Windows alatt
+## Tartalomjegyzék
 
-A Windowsos indítófájlokat a projekt gyökérmappájából kell futtatni.
+1. Mi fog elindulni
+2. Előfeltételek
+3. Gyors indítás Windowsban (dupla kattintással)
+4. Indítás terminálból (PowerShell)
+5. Első indítás utáni ellenőrzés
+6. Leállítás
+7. Kézi futtatás Docker nélkül
+8. Gyakori hibák és gyors megoldások
+9. Hasznos URL-ek
 
-Ennek helye a Windows Fájlkezelőben:
+---
 
-`C:\Users\pc\Documents\GitHub\powerplanprobalegujabb`
+## 1. Mi fog elindulni
 
-Javasolt lépések:
+A projekt indításakor 4 szolgáltatás fut:
 
-1. Indítsa el a Docker Desktop alkalmazást.
-2. Nyissa meg a Windows Fájlkezelőt.
-3. Keresse meg a projekt mappáját ezen az útvonalon: `C:\Users\pc\Documents\GitHub\powerplanprobalegujabb`.
-4. A megnyitott projektmappában futtassa a szükséges `.bat` fájlt dupla kattintással.
+- `db`: MySQL 8 adatbázis
+- `phpmyadmin`: webes adatbázis-kezelő felület
+- `backend`: Express API
+- `frontend`: React + Vite fejlesztői szerver
 
-Használható fájlok:
-
-- `PowerPlan-Start.bat`: a teljes alkalmazás indítása
-- `PowerPlan-Tests.bat`: build és tesztek futtatása, a Selenium tesztek látható Google Chrome ablakban
-- `PowerPlan-Stop.bat`: a futó szolgáltatások leállítása
-
-Terminálból ugyanez a következő módon futtatható:
-
-```powershell
-cd "C:\Users\pc\Documents\GitHub\powerplanprobalegujabb"
-.\PowerPlan-Start.bat
-.\PowerPlan-Tests.bat
-.\PowerPlan-Stop.bat
-```
-
-## Gyorsindítás
-
-Ha csak gyorsan el akarod indítani vagy ellenőrizni a projektet Windows alatt, a projekt gyökerében ezeket a fájlokat használd:
-
-- `PowerPlan-Start.bat`: teljes Docker stack indítása és a fontos oldalak megnyitása
-- `PowerPlan-Stop.bat`: teljes Docker stack leállítása
-- `PowerPlan-Tests.bat`: frontend build, backend Jest tesztek és frontend Selenium tesztek futtatása
-
-Megjegyzés: a `PowerPlan-Tests.bat` Selenium része Dockerrel indítja el a szükséges backend szolgáltatásokat, ezért a Docker Desktopnak futnia kell.
-Megjegyzés: a Windowsos gyors futtatás során a Selenium tesztek nem headless módban, hanem látható Google Chrome ablakban futnak végig.
-
-Ajánlott sorrend:
-
-1. Indítsd el a Docker Desktopot.
-2. Kattints duplán a `PowerPlan-Start.bat` fájlra.
-3. Ha ellenőrizni akarod a projektet, futtasd a `PowerPlan-Tests.bat` fájlt.
-4. Ha végeztél, futtasd a `PowerPlan-Stop.bat` fájlt.
-
-## Projekt felépítése
-
-- `Frontend/`: React + Vite kliensalkalmazás
-- `Backend/`: Express API
-- `db/`: adatbázis séma és mentések
-- `docker-compose.yml`: teljes stack indítása Dockerrel
-
-## Technológiai stack
-
-- Frontend: React, Vite, Chart.js, Leaflet
-- Backend: Node.js, Express, MySQL2, Nodemailer
-- Adatbázis: MySQL 8
-- Tesztelés:
-  - Backend: Jest
-  - Frontend E2E: Selenium WebDriver
-
-## Alapértelmezett portok
+Alap portok:
 
 - Frontend: `http://localhost:5173`
 - Backend: `http://localhost:5001`
@@ -76,89 +35,162 @@ Ajánlott sorrend:
 - phpMyAdmin: `http://localhost:8081`
 - MySQL host port: `3308`
 
-## Előfeltételek
+---
 
-### Dockeres futtatáshoz
+## 2. Előfeltételek
 
-- Docker Desktop
-- Docker Compose
+### Kötelező (Dockeres indításhoz)
 
-### Kézi futtatáshoz
+- Docker Desktop telepítve
+- Docker Desktop fut
 
-- Node.js 20 körüli verzió
-- npm
-- Elérhető MySQL szerver
-- Chrome böngésző a Selenium tesztekhez
+### Kötelező (tesztfuttatáshoz)
 
-## 1. Indítás Dockerrel
+- Node.js telepítve (npm és npx elérhető)
+- Google Chrome telepítve
 
-Ez a legegyszerűbb és javasolt mód.
+### Gyors ellenőrzés PowerShellből
 
-### Egykattintásos indítás Windows alatt
+Nyiss egy PowerShellt a projekt gyökérmappájában, és futtasd:
 
-Ha nem akarsz parancsokat kézzel futtatni, használd a projekt gyökerében lévő fájlokat:
+```powershell
+docker --version
+docker compose version
+node -v
+npm -v
+npx -v
+```
 
-- `PowerPlan-Start.bat`: elindítja a teljes stacket Dockerrel, megvárja a backendet, majd megnyitja a fontos URL-eket
-- `PowerPlan-Stop.bat`: leállítja a teljes stacket
-- `PowerPlan-Tests.bat`: lefuttatja a frontend buildet, a backend Jest teszteket és a frontend Selenium teszteket látható Google Chrome ablakban
+Ha bármelyik parancs hibát ad, előbb azt kell javítani.
 
-Megjegyzés: a `PowerPlan-Tests.bat` használatához a Docker Desktopnak futnia kell, mert a Selenium tesztek a Dockeres adatbázist és backendet használják.
+---
 
-Használat:
+## 3. Gyors indítás Windowsban (dupla kattintással)
+
+Ez a legegyszerűbb módszer.
+
+A projekt gyökerében 3 batch fájl van:
+
+- `PowerPlan-Start.bat`: teljes rendszer indítása
+- `PowerPlan-Tests.bat`: build + backend tesztek + frontend Selenium tesztek
+- `PowerPlan-Stop.bat`: teljes rendszer leállítása
+
+### Pontos lépések
 
 1. Indítsd el a Docker Desktopot.
-2. Kattints duplán a `PowerPlan-Start.bat` fájlra.
-3. Ha kell, futtasd a `PowerPlan-Tests.bat` fájlt.
-4. Leállításhoz kattints duplán a `PowerPlan-Stop.bat` fájlra.
+2. Várd meg, amíg teljesen feláll (ne csak megnyíljon, hanem futó állapotban legyen).
+3. Nyisd meg a projekt mappáját a Fájlkezelőben.
+4. Kattints duplán a `PowerPlan-Start.bat` fájlra.
+5. Várd meg, amíg kiírja, hogy minden szolgáltatás elindult.
+6. Automatikusan megnyílnak az oldalak böngészőben.
 
-### Indítás
+### Amit a start script csinál a háttérben
 
-Projekt gyökérből:
+- ellenőrzi, hogy elérhető-e a Docker
+- elindítja a compose szolgáltatásokat
+- megvárja, amíg a backend health endpoint válaszol
+- megnyitja a Frontend, Health és phpMyAdmin oldalakat
+
+---
+
+## 4. Indítás terminálból (PowerShell)
+
+Ha inkább parancssorból indítanád, a projekt gyökérmappájában futtasd:
+
+### 4.1 Előtérben futtatás (logok folyamatosan látszanak)
 
 ```powershell
 docker compose up --build
 ```
 
-Ha háttérben akarod futtatni:
+### 4.2 Háttérben futtatás (ajánlott)
 
 ```powershell
 docker compose up --build -d
 ```
 
-### Leállítás
+### 4.3 Konténerállapot ellenőrzése
+
+```powershell
+docker compose ps
+```
+
+Elvárt: minden szolgáltatás `Up` állapotban legyen.
+
+---
+
+## 5. Első indítás utáni ellenőrzés
+
+Ezt a részt mindig érdemes végigcsinálni, hogy biztosan jó legyen a környezet.
+
+### 5.1 Backend health ellenőrzés
+
+```powershell
+Invoke-WebRequest -UseBasicParsing http://localhost:5001/api/health | Select-Object StatusCode,Content
+```
+
+Elvárt:
+
+- StatusCode: `200`
+- Content: `{"ok":true,"service":"powerplan-backend"}`
+
+### 5.2 Frontend ellenőrzés
+
+Nyisd meg böngészőben:
+
+- `http://localhost:5173`
+
+### 5.3 phpMyAdmin ellenőrzés
+
+Nyisd meg böngészőben:
+
+- `http://localhost:8081`
+
+Belépési adatok:
+
+- Szerver: `db` (vagy `localhost` / `127.0.0.1` a helyzettől függően)
+- Felhasználónév: `root`
+- Jelszó: `root`
+
+---
+
+## 6. Leállítás
+
+### Dupla kattintással
+
+- futtasd a `PowerPlan-Stop.bat` fájlt
+
+### Terminálból
 
 ```powershell
 docker compose down
 ```
 
-### Mit indít el a compose
+Ha teljesen törölni akarod a volume-okat is (adatvesztéssel jár):
 
-- `db`: MySQL adatbázis
-- `phpmyadmin`: adatbázis admin felület
-- `backend`: Express API
-- `frontend`: Vite fejlesztői szerver
+```powershell
+docker compose down -v
+```
 
-### Fontos Docker részletek
+Fontos: a `-v` törli az adatbázis tartós adatait.
 
-- Az adatbázis konténer neve: `powerplan_db`
-- A backend konténer belsőleg a `powerplan_db` hostot használja
-- A host gépről a MySQL a `127.0.0.1:3308` címen érhető el
+---
 
-## 2. Indítás kézzel Docker nélkül
+## 7. Kézi futtatás Docker nélkül
 
-Ez akkor hasznos, ha külön akarod futtatni a szolgáltatásokat.
+Ez haladóbb útvonal. Akkor használd, ha tudatosan külön akarod kezelni a szolgáltatásokat.
 
-### 2.1 Adatbázis
+## 8.1 Adatbázis
 
-Szükség van egy MySQL adatbázisra `powerplan` néven.
+Szükség van egy MySQL szerverre `powerplan` adatbázissal.
 
-Ha Dockerben csak az adatbázist akarod indítani:
+Egyszerű opció: csak DB + phpMyAdmin indítása Dockerrel:
 
 ```powershell
 docker compose up db phpmyadmin -d
 ```
 
-Ebben az esetben a MySQL hostról így érhető el:
+Host oldali elérés:
 
 - host: `127.0.0.1`
 - port: `3308`
@@ -166,39 +198,27 @@ Ebben az esetben a MySQL hostról így érhető el:
 - password: `root`
 - database: `powerplan`
 
-### 2.2 Backend
-
-Lépj be a backend mappába:
+## 8.2 Backend kézi indítása
 
 ```powershell
 cd Backend
-```
-
-Telepítés:
-
-```powershell
 npm install
-```
-
-Fejlesztői indítás:
-
-```powershell
 npm run dev
 ```
 
-Normál indítás:
+vagy
 
 ```powershell
+cd Backend
+npm install
 npm start
 ```
 
-### Fontos megjegyzés a `.env` fájlhoz
+### Fontos `.env` megjegyzés
 
-A jelenlegi [Backend/.env](Backend/.env) Dockeres futtatásra van beállítva:
+A Dockeres futtatásnál a DB host jellemzően `powerplan_db`.
 
-- `DB_HOST=powerplan_db`
-
-Ha host gépről, Docker nélkül indítod a backendet, ezt általában át kell írni erre:
+Ha host gépről futtatod a backendet, általában ez működik:
 
 ```env
 DB_HOST=127.0.0.1
@@ -209,224 +229,90 @@ DB_NAME=powerplan
 PORT=5000
 ```
 
-Megjegyzés:
-
-- a backend a compose-ban `5000` belső portra indul
-- a host gépen a compose `5001`-re mapeli ki
-
-### 2.3 Frontend
-
-Lépj be a frontend mappába:
+## 8.3 Frontend kézi indítása
 
 ```powershell
 cd Frontend
-```
-
-Telepítés:
-
-```powershell
 npm install
-```
-
-Fejlesztői indítás:
-
-```powershell
 npm run dev
 ```
 
-Build készítés:
+Build:
 
 ```powershell
+cd Frontend
 npm run build
 ```
 
-Build preview:
+Preview:
 
 ```powershell
+cd Frontend
 npm run preview
 ```
 
-## 3. Gyors működésellenőrzés
+---
 
-### Backend health ellenőrzés
+## 8. Gyakori hibák és gyors megoldások
 
-```powershell
-Invoke-WebRequest -UseBasicParsing http://localhost:5001/api/health | Select-Object StatusCode,Content
-```
+### Hiba: a start script szerint nem érhető el a Docker
 
-Elvárt válasz:
+Teendő:
 
-- `200`
-- `{"ok":true,"service":"powerplan-backend"}`
+1. Indítsd el a Docker Desktopot.
+2. Várj 30-60 másodpercet.
+3. Ellenőrizd PowerShellből: `docker info`
+4. Futtasd újra a scriptet.
 
-### Frontend ellenőrzés
+### Hiba: frontend nem jön be, de a backend health jó
 
-Nyisd meg:
+Teendő:
 
-- `http://localhost:5173`
+1. Ellenőrizd a konténereket: `docker compose ps`
+2. Nézd meg a frontend logot: `docker compose logs frontend --tail=100`
+3. Próbáld meg újraindítani: `docker compose restart frontend`
 
-### phpMyAdmin ellenőrzés
+### Hiba: `Cannot GET /` a backend címen
 
-Nyisd meg:
+Ez normális lehet. A backend API főleg az `/api/...` útvonalakon ad választ.
 
-- `http://localhost:8081`
+Ellenőrzésre ezt használd:
 
-## 4. Tesztek
+- `http://localhost:5001/api/health`
 
-### 4.1 Backend tesztek
+### Hiba: MySQL hostról nem érhető el `powerplan_db` néven
 
-A backend `package.json` jelenleg nem tartalmaz külön `test` scriptet, ezért a teszteket közvetlenül Jesttel kell futtatni.
+Ez normális. A `powerplan_db` név Docker hálózaton belüli hostnév.
 
-Windows alatt ezek automatizáltan is futtathatók a projekt gyökeréből a `PowerPlan-Tests.bat` fájllal.
-
-Lépj a backend mappába:
-
-```powershell
-cd Backend
-```
-
-Az ismert backend tesztek futtatása:
-
-```powershell
-npx jest test/services/nutritionHelpers.test.js test/services/workoutHelpers.test.js --runInBand
-```
-
-Ha minden Jest tesztet futtatnál:
-
-```powershell
-npx jest --runInBand
-```
-
-### 4.2 Frontend Selenium tesztek
-
-Lépj a frontend mappába:
-
-```powershell
-cd Frontend
-```
-
-Összes Selenium teszt normál módban:
-
-```powershell
-npm run test:all
-```
-
-Összes Selenium teszt headless módban:
-
-```powershell
-npm run test:all:headless
-```
-
-Megjegyzések:
-
-- a Selenium tesztekhez futó frontend és backend szükséges
-- a tesztek Chrome/Chromedriver környezetet igényelnek
-
-### 4.3 Frontend build ellenőrzés
-
-```powershell
-cd Frontend
-npm run build
-```
-
-Ez jó első ellenőrzés minden frontend módosítás után.
-
-## 5. Tipikus fejlesztői workflow
-
-### Teljes rendszer indítása
-
-```powershell
-docker compose up --build
-```
-
-### Frontend módosítás után
-
-```powershell
-cd Frontend
-npm run build
-```
-
-### Backend recommendation logika módosítás után
-
-```powershell
-cd Backend
-npx jest test/services/nutritionHelpers.test.js test/services/workoutHelpers.test.js --runInBand
-```
-
-### E2E ellenőrzéshez
-
-```powershell
-cd Frontend
-npm run test:all:headless
-```
-
-## 6. Gyakori hibák és megoldások
-
-### A backend fut, de a böngészőben `Cannot GET /` látszik
-
-Ez nem feltétlen portprobléma. A backend API elsősorban az `/api/...` útvonalakon érhető el.
-
-Ellenőrizd inkább ezt:
-
-```powershell
-Invoke-WebRequest -UseBasicParsing http://localhost:5001/api/health
-```
-
-### A hostról nem éred el a MySQL-t `powerplan_db` néven
-
-Ez normális. A `powerplan_db` Docker hálózaton belüli hostnév.
-
-Host gépről ezt használd:
+Host gépről használd ezt:
 
 - host: `127.0.0.1`
 - port: `3308`
 
-### Új regisztráció után bizonyos dashboard adatok nem töltődnek
+### Hiba: Selenium tesztek megbuknak induláskor
 
-Ilyenkor ellenőrizd:
+Teendő:
 
-- van-e `powerplan_current_user` a localStorage-ben
-- létrejött-e a `user_questionnaires` sor az adott userhez
-- él-e a backend a `5001`-es porton
+1. Ellenőrizd, hogy fut a Docker Desktop.
+2. Ellenőrizd, hogy telepítve van a Chrome.
+3. Futtasd külön a frontend buildet: `cd Frontend && npm run build`.
+4. Utána indítsd újra a teszteket.
 
-### A favicon vagy cím nem frissül
+### Hiba: új regisztráció után hiányos dashboard adatok
 
-A böngésző gyakran cache-eli a favicon-t. Ilyenkor hard refresh kell.
+Ellenőrizd:
 
-### A frontend build figyelmeztet a nagy bundle méretre
+- él-e a backend (`/api/health`)
+- van-e aktuális user adat localStorage-ben
+- létrejött-e kérdőív adat az adott felhasználóhoz
 
-Ez jelenleg ismert állapot:
+---
 
-- a build sikeres
-- a chunk size warning nem blokkoló hiba
-
-## 7. Hasznos URL-ek
+## 9. Hasznos URL-ek
 
 - Frontend: `http://localhost:5173`
-- Backend health: `http://localhost:5001/api/health`
 - Backend root: `http://localhost:5001/`
+- Backend health: `http://localhost:5001/api/health`
 - phpMyAdmin: `http://localhost:8081`
 
-## 8. Jelszó-visszaállítás email konfiguráció
 
-A jelszó-visszaállítás SMTP beállításokat igényel a backend oldalon.
-
-Használható változók:
-
-- `SMTP_SERVICE` vagy `SMTP_HOST`
-- `SMTP_PORT`
-- `SMTP_SECURE`
-- `SMTP_USER`
-- `SMTP_PASS`
-- `MAIL_FROM`
-
-A rendszer ideiglenes jelszót küld emailben, majd a felhasználó ezt a Profil oldalon módosíthatja.
-
-## 9. Résztvevők
-
-- Tóth Márton Máté
-- Pajor Alex
-
-## 10. Megjegyzés
-
-Ez a projekt a szoftverfejlesztő és tesztelő képzés záróvizsgájának részeként készült..
