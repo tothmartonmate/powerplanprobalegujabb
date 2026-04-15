@@ -1,0 +1,158 @@
+---
+sidebar_position: 2
+---
+
+# 🏗️ Rendszerterv és architektúra
+## 1. A rendszer technológiai felépítése
+
+A PowerPlan három fő réteg köré épül:
+
+### Frontend
+- **Technológia**: React + Vite
+- **Feladata**: felhasználói felület, űrlapok, navigáció, állapotkezelés, végpontok hívása
+- **Fő fájl**: `Frontend/src/App.jsx`
+- **Fő oldalak**: `frontend/src/pages/registration.jsx`, `Frontend/src/pages/login.jsx`, `Frontend/src/pages/questionnarie.jsx`, `Frontend/src/pages/dashboard.jsx`
+
+### Backend
+- **Technológia**: Node.js + Express
+- **Feladata**: REST API szolgáltatás, adatbázis-kezelés, hitelesítés, jelszómentés, email küldés, admin műveletek
+- **Fő fájl**: `Backend/server.js`
+
+### Adatbázis
+- **Technológia**: MySQL
+- **Feladata**: felhasználói profilok, kérdőívek, edzés- és étkezésadatok, üzenetek, fejlődési fotók tárolása
+- **Séma**: `db/powerplan.sql`
+
+---
+
+## 2. Frontend főbb modulok
+
+A frontend főbb komponensei és util fájljai:
+
+- `Frontend/src/App.jsx` - oldalválasztás, demo mód, bejelentkezés kezelése, kapcsolat a backenddel
+- `Frontend/src/pages/registration/RegistrationForm.jsx` - regisztrációs űrlap és helyi validáció
+- `Frontend/src/pages/login/LoginForm.jsx` - bejelentkezés, jelszómegjelenítés kapcsoló
+- `Frontend/src/pages/questionnarie/QuestionnairePage.jsx` - kérdőív kitöltés és tárolás
+- `Frontend/src/pages/dashboard/DashboardPage.jsx` - dashboard, üzenetek, edzés- és étkezéskezelés, admin panel
+- `Frontend/src/utils/foodDatabase.js` - étrendi javaslatok
+- `Frontend/src/utils/workoutplans.js` - edzésterv-sablonok
+- `Frontend/src/utils/gymsByCounty.js` - edzőterem lista
+
+---
+
+## 3. Backend API áttekintés
+
+A backend REST API főbb végpontjai:
+
+### Hitelesítés és felhasználókezelés
+- **GET** `/api/register/check-email?email=...` – email elérhetőségének ellenőrzése
+- **POST** `/api/register` – új felhasználó regisztrációja
+- **POST** `/api/login` – bejelentkezés
+- **POST** `/api/forgot-password` – ideiglenes jelszó küldése emailben
+
+### Kérdőív és profil
+- **POST** `/api/questionnaire` – kérdőív mentése
+- **GET** `/api/questionnaire/:userId` – korábbi kérdőív lekérése
+- **PUT** `/api/update-profile` – profiladatok frissítése
+- **PUT** `/api/change-password` – jelszó módosítása
+- **GET** `/api/user-profile/:userId` – felhasználói profil lekérése
+
+### Dashboard és ajánlások
+- **GET** `/api/dashboard/:userId` – dashboard adatok lekérése
+- **GET** `/api/nutrition/:userId/week` – heti étkezési ajánlások
+
+### Étkezés és progresszió
+- **POST** `/api/meals` – étkezés rögzítése
+- **DELETE** `/api/meals/:mealId` – étkezés törlése
+- **GET** `/api/progress/:userId` – fejlődési képek és testsúlyadatok
+- **POST** `/api/progress` – új fejlődési kép vagy súlyadat mentése
+- **PUT** `/api/progress/:id` – fejlődési bejegyzés módosítása
+- **DELETE** `/api/progress/:id` – fejlődési bejegyzés törlése
+- **POST** `/api/upload-profile-image` – profilkép feltöltése
+
+### Edzéstervek
+- **POST** `/api/workouts` – új edzés létrehozása
+- **GET** `/api/workouts/:userId/week` – heti edzésterv lekérése
+- **PUT** `/api/workouts/:workoutId` – edzés módosítása
+- **DELETE** `/api/workouts/:workoutId` – edzés törlése
+
+### Üzenetkezelés
+- **POST** `/api/contact` – kapcsolatfelvételi üzenet küldése
+- **GET** `/api/messages/:userId` – felhasználói üzenetek lekérése
+- **POST** `/api/messages/:messageId/mark-read` – üzenet olvasottnak jelölése
+- **POST** `/api/messages` – új üzenet küldése
+- **DELETE** `/api/messages/:messageId` – felhasználói üzenet törlése
+
+### Admin funkciók
+- **GET** `/api/admin/overview/:userId` – admin műszerfal adatai
+- **POST** `/api/admin/messages/mark-read` – admin üzenet olvasottnak jelölése
+- **DELETE** `/api/admin/messages/:messageId` – admin üzenet törlése
+- **PUT** `/api/admin/messages/:messageId/reply` – admin válasz küldése
+- **POST** `/api/admin/users/:targetUserId/message` – admin üzenet küldése egy felhasználónak
+- **PUT** `/api/admin/users/:targetUserId` – felhasználó módosítása
+- **DELETE** `/api/admin/users/:targetUserId` – felhasználó törlése
+
+---
+
+## 4. Futtatási környezet
+
+### Docker Compose és a root indító script
+
+A gyökérkönyvtár `indito.js` fájlja a Docker Compose-ban definiált szolgáltatásokat indítja el:
+
+- `Frontend` – React/Vite alkalmazás a `5173` porton
+- `Backend` – Express API a `5001` porton
+- `MySQL` és `phpMyAdmin` – adatbázis-kezelés a `8081` porton
+
+### Fejlesztői indítás
+
+```bash
+# Frontend
+cd Frontend
+npm install
+npm run dev
+
+# Backend
+cd Backend
+npm install
+npm start
+```
+
+---
+
+## 5. Külső könyvtárak és függőségek
+
+### Frontend
+- `@react-google-maps/api` – térképes funkciók és edzőtermek megjelenítése
+- `axios` – HTTP kérések a backend felé
+- `chart.js`, `react-chartjs-2` – diagramok és progresszió ábrázolása
+- `leaflet` – interaktív térkép
+- `selenium-webdriver`, `chromedriver` – E2E tesztek
+
+### Backend
+- `bcrypt` – jelszó hash-elése
+- `cors` – cross-origin támogatás
+- `dotenv` – környezeti változók betöltése
+- `express` – REST API szerver
+- `mysql2` – MySQL adatkapcsolat
+- `nodemailer` – jelszóemlékeztető email küldése
+
+### Tesztelés
+- `jest` – backend unit tesztek
+- `supertest` – API tesztelés (ha használva van)
+
+---
+
+## 6. Kommunikációs réteg
+
+A felhasználói felület HTTP REST API hívásokkal kommunikál a `Backend/server.js` végpontjaival. A backend MySQL adatbázisra csatlakozik a `mysql2/promise` kliens segítségével.
+
+```text
+Felhasználó -> React/Vite frontend -> Express REST API -> MySQL adatbázis
+```
+
+---
+
+:::info
+A jelen dokumentáció a projektben található aktuális frontend és backend fájlok alapján készült.
+:::

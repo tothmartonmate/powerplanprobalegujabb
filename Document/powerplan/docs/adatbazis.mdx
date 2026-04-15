@@ -1,0 +1,117 @@
+---
+sidebar_position: 3
+---
+
+# 🗄️ Adatbázis-tervezés
+![Adatbázis architektúra](/img/erdiag.png)
+## 1. Az adatbázis szerepe
+
+A PowerPlan MySQL adatbázisa a következő fő területeket támogatja:
+
+- felhasználói fiókok és jogosultságok
+- kérdőívek és személyre szabott célok
+- edzés- és étkezésnaplók
+- testsúly és fejlődési képek
+- belső üzenetküldés és admin válaszok
+- étrendi sablonok és ajánlások
+
+A teljes séma megtalálható a `db/powerplan.sql` fájlban.
+
+---
+
+## 2. Főbb adattáblák
+
+| Tábla | Leírás |
+|-------|--------|
+| `users` | Felhasználói adatok és hitelesítés |
+| `user_questionnaires` | A kérdőívben megadott személyes és edzési beállítások |
+| `nutrition_logs` | Az egyes felhasználók étkezései és tápanyagadatai |
+| `weight_logs` | Testsúly története és mérési dátumai |
+| `progress_photos` | Fejlődési fotók Base64 kódolással |
+| `workouts` | Mentett edzéstervek és beosztások |
+| `workout_exercises` | Edzésenkénti gyakorlatok és sorozatok |
+| `diet_templates` | Előre definiált étrendi sablonok |
+| `contact_messages` | Felhasználói és admin üzenetek |
+
+---
+
+## 3. Fontos táblák és mezők
+
+### `users`
+- `id` – automatikus egyedi azonosító
+- `full_name` – felhasználó teljes neve
+- `email` – bejelentkezéshez használt email cím
+- `password_hash` – bcrypt-tel titkosított jelszó
+- `profile_image` – profilkép (Base64)
+- `role` – jogosultság (`user` vagy `admin`)
+- `fitness_goal` – alap fitness cél
+- `total_points`, `current_level` – belső progressziós adatok
+
+### `user_questionnaires`
+- `user_id` – kapcsolódó felhasználó
+- `gender`, `height_cm`, `weight_kg`, `birth_date`
+- `activity_level`, `experience_level`, `weekly_training_days`
+- `training_types` – edzéstípusok JSON-ként
+- `current_injury`, `chronic_conditions`, `medications`
+- `main_goal`, `goal_timeframe`, `specific_goal`
+- `diet_types`, `allergies`, `diet_control_level`, `wants_diet_recommendations`
+- `training_location`, `preferred_weekly_frequency`
+- `physique_satisfaction`, `energy_level`, `obstacles`, `additional_comments`
+
+### `nutrition_logs`
+- `user_id` – kapcsolódó felhasználó
+- `meal_type` – `breakfast`, `lunch`, `dinner`, `snack`
+- `food_name` – étel neve
+- `calories`, `protein_g`, `carbs_g`, `fat_g`
+- `consumed_date` – a fogyasztás dátuma
+
+### `workouts`
+- `user_id` – edzésterv tulajdonosa
+- `name` – edzés neve
+- `workout_type` – edzéscél vagy típus
+- `scheduled_day` – a hét napja
+- `created_at` – létrehozás időpontja
+
+### `workout_exercises`
+- `workout_id` – kapcsolódó edzés
+- `muscle_group` – megcélzott izomcsoport
+- `exercise_name` – gyakorlat neve
+- `sets_data` – sorozatok JSON-ként
+
+### `diet_templates`
+- `goal` – fogyás, izomépítés, erő, fittség
+- `daily_calories` – napi kalória cél
+- `schedule` – étkezési terv JSON-ként
+- `macros` – makrotápanyag adatok JSON-ként
+
+### `progress_photos`
+- `user_id` – felhasználó azonosítója
+- `image_base64` – a kép Base64 tartalma
+- `note` – megjegyzés a fotóhoz
+- `record_date` – a fotó dátuma
+
+### `contact_messages`
+- `origin` – `user` vagy `admin`
+- `status` – `new` vagy `replied`
+- `admin_reply` – admin válaszüzenet
+- `created_at`, `replied_at`
+
+---
+
+## 4. Kapcsolatok és integritás
+
+A `contact_messages` tábla `user_id` mezője `users.id`-re hivatkozik, és `ON DELETE SET NULL` beállítással kezeli a felhasználó törlését.
+
+A `nutrition_logs`, `workout_exercises`, `progress_photos` és `user_questionnaires` táblák kapcsolódó felhasználóhoz kötődnek, és a `users` tábla törlése esetén a kapcsolódó adatok a `ON DELETE CASCADE` viselkedéssel megfelelően rendezhetők.
+
+---
+
+## 5. A séma forrása
+
+A teljes, aktuális adatbázis-séma megtalálható a `db/powerplan.sql` fájlban.
+
+---
+
+:::tip
+A PowerPlan adatbázisa az aktuális alkalmazáskód alapján épül, és a MySQL dump hiteles forrásként szolgál a táblák szerkezetéhez.
+:::

@@ -1,0 +1,56 @@
+---
+sidebar_position: 1
+---
+
+# PowerPlan dokumentáció
+
+![PowerPlan logo](/img/logo.png)
+
+Ez a dokumentáció a PowerPlan webalkalmazás jelenlegi állapotát írja le a `Frontend` és `Backend` forrásfájlok alapján.
+
+A PowerPlan célja egy olyan személyre szabott fitnesz- és táplálkozástámogató rendszer kialakítása, amely:
+
+- edzés- és étkezéstervezést biztosít
+- felhasználói profilokat, kérdőíveket és előrehaladást kezel
+- belső üzenetküldési rendszert és admin felületet tartalmaz
+- Dockerrel futtatható, és automatizált tesztekkel van ellenőrizve
+
+## Dokumentáció felépítése
+
+- **Bevezetés** – a projekt célja és áttekintése
+- **Rendszerterv** – a frontend, backend és adatbázis réteg kapcsolata
+- **Adatbázis** – a MySQL táblák és főbb adattípusok
+- **Telepítés** – hogyan indítható az alkalmazás Dockerrel és manuálisan
+- **Funkciók** – a felhasználói és admin funkciók részletes bemutatása
+
+## Mely fájlokat tükrözi?
+
+A dokumentáció főbb forrásai:
+
+- `Frontend/src/App.jsx`
+- `Frontend/src/pages/*`
+- `Frontend/src/pages/dashboard/*`
+- `Frontend/src/utils/*`
+- `Backend/server.js`
+- `db/powerplan.sql`
+- `indito.js`
+- `docker-compose.yml`
+
+## Gyors hivatkozások
+
+- [Telepítés](./telepítés)
+- [Rendszerterv](./rendszerterv)
+- [Adatbázis](./adatbazis)
+- [Funkciók](./funkciók)
+
+## Dokumentáció indítása
+
+A dokumentáció a `Document/powerplan` mappában található. A következő parancsokkal futtatható:
+
+```bash
+cd Document/powerplan
+npm install
+npm start
+```
+
+A dokumentáció alapértelmezett portja: **http://localhost:3002**

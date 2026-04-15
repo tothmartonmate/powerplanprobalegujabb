@@ -1,0 +1,218 @@
+---
+sidebar_position: 4
+---
+
+# 🚀 Telepítés és indítás
+![Dokumentáció indítás](/img/selenium.png)
+## Előfeltételek
+
+### 1. Docker Desktop
+A projekthez **Docker Desktop** szükséges, mert az `indito.js` Docker Compose használatával indítja el a frontend, backend és adatbázis szolgáltatásokat.
+
+**Letöltés**: [https://www.docker.com/products/docker-desktop](https://www.docker.com/products/docker-desktop)
+
+### 2. Node.js (fejlesztéshez)
+Ha manuálisan szeretnél fejleszteni, szükséged lesz a **Node.js 18+** verzióra.
+
+**Letöltés**: [https://nodejs.org/](https://nodejs.org/)
+
+### 3. Git
+A forráskód klónozásához szükséges.
+
+**Letöltés**: [https://git-scm.com/](https://git-scm.com/)
+
+---
+
+## Telepítés lépései
+
+### 1. Repository klónozása
+
+```bash
+git clone https://github.com/tothmartonmate/Vizsgaremek-PowerPlan.git
+cd Vizsgaremek-PowerPlan
+```
+
+### 2. Docker Desktop indítása
+
+Indítsd el a Docker Desktopot, és várd meg, hogy teljesen felálljon.
+
+### 3. Projekt futtatása
+
+A legegyszerűbb mód:
+
+```bash
+node indito.js
+```
+
+Windows-on használhatod a batch fájlt is:
+
+```bash
+PowerPlan-Start.bat
+```
+
+---
+
+## 🌐 Hozzáférési portok
+
+| Modul | URL | Leírás |
+|-------|-----|--------|
+| **Frontend** | [http://localhost:5173](http://localhost:5173) | React frontend |
+| **Backend API** | http://localhost:5001 | Express REST API |
+| **phpMyAdmin** | [http://localhost:8081](http://localhost:8081) | MySQL adatbázis kezelése |
+| **Dokumentáció** | [http://localhost:3002](http://localhost:3002) | Docusaurus dokumentáció |
+
+---
+
+## Dokumentáció indítása
+
+A dokumentáció a `Document/powerplan` mappában található.
+
+### Windows batch fájl
+
+```bash
+Document\powerplan\PowerPlan-Docs-Start.bat
+```
+
+### Manuális indítás
+
+```bash
+cd Document/powerplan
+npm install
+npm start -- --port 3002
+```
+
+---
+
+## Fejlesztői indítás
+
+### Frontend
+
+```bash
+cd Frontend
+npm install
+npm run dev
+```
+
+### Backend
+
+```bash
+cd Backend
+npm install
+npm start
+```
+
+### Dokumentáció
+
+```bash
+cd Document/powerplan
+npm install
+npm run start -- --port 3002
+```
+
+---
+
+## Tesztelés
+
+A projekt két fő tesztrendszerrel rendelkezik:
+
+- **Backend Jest tesztek** a `Backend/test/services/` mappában
+- **Frontend Selenium tesztek** a `Frontend/selenium_tests/` mappában
+
+### Backend tesztek
+
+```bash
+cd Backend
+npx jest test/services/nutritionHelpers.test.js test/services/workoutHelpers.test.js --runInBand
+```
+
+### Frontend build ellenőrzés
+
+```bash
+cd Frontend
+npm run build
+```
+
+### Frontend Selenium tesztek
+
+```bash
+cd Frontend
+npm run test:all
+```
+
+### Össztesztelés Windows-on
+
+```bash
+PowerPlan-Tests.bat
+```
+
+---
+
+## Hibaelhárítás
+
+### Docker nem indul
+
+```bash
+docker --version
+docker info
+```
+
+### Dokumentáció nem elérhető
+
+Győződj meg arról, hogy a `Document/powerplan` mappából indítod a dokumentációt, és a `3002` port szabad.
+
+---
+
+## Az indito.js szerepe
+
+Az `indito.js` a következőket végzi:
+
+1. `docker compose up -d --build`
+2. elindítja a backend, frontend és adatbázis szolgáltatásokat
+3. a `CTRL + C` leállításkor `docker compose down`-t futtat
+
+
+### Port már használaton van
+
+```bash
+# Windows: Találd meg a folyamatot
+netstat -ano | findstr :5173
+
+# Linux/Mac:
+lsof -i :5173
+
+# Állítsd le a folyamatot (Windows)
+taskkill /PID [PID] /F
+```
+
+### Adatbázis kapcsolódási hiba
+
+```bash
+# Állítsd vissza az adatbázist
+docker-compose down -v
+docker-compose up -d
+```
+
+---
+
+## ✅ Ellenőrzés
+
+Miután elindult, ellenőrizd a nyitva lévő portokat:
+
+```bash
+# Windows
+netstat -ano | findstr LISTENING
+
+# Linux/Mac
+lsof -i -P -n | grep LISTEN
+```
+
+Kell látnod:
+- Port 5173 (Frontend)
+- Port 5001 (Backend)
+- Port 3306 (MySQL)
+- Port 8081 (phpMyAdmin)
+- Port 3002 (Dokumentáció)
+
+:::success
+Sikeres telepítés után a projekt teljesen funkcionális és készen áll a fejlesztésre!
+:::

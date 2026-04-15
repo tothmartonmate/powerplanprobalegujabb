@@ -1,0 +1,157 @@
+---
+sidebar_position: 5
+---
+
+# ✨ Főbb funkciók
+
+![Funkciók áttekintése](/img/kezdold.png)
+
+A PowerPlan jelenlegi frontend és backend kódja alapján az alkalmazás a következő fő szolgáltatásokat nyújtja.
+
+## Bejelentkezés és felhasználói regisztráció
+
+A felhasználók email-cím és jelszó segítségével regisztrálhatnak és jelentkezhetnek be.
+
+### Regisztráció
+- email alapú regisztráció
+- jelszó titkosítása `bcrypt`-tel
+- fitness cél meghatározása a regisztráció során
+- email ellenőrzés a regisztrációs lépés előtt (`/api/register/check-email`)
+
+### Bejelentkezés
+- email/jelszó hitelesítés
+- sikeres belépés után token generálása a frontend számára
+- jelszó-visszaállítás email küldéssel (`/api/forgot-password`)
+
+---
+
+## Kérdőív és személyre szabás
+
+A regisztráció után a felhasználó egy részletes kérdőívet tölthet ki, amely alapján a rendszer személyre szabott ajánlásokat készít.
+
+### Témakörök
+- személyes adatok: név, magasság, testsúly, nem, születési dátum
+- edzés-szokások: heti edzésszám, tapasztalati szint, edzéstípusok
+- egészség: sérülések, krónikus betegségek, gyógyszerek
+- célok: fő cél, céldátum, motiváció
+- életmód: alvás, stressz, ülőmunka
+- táplálkozás: diéta típusok, allergiák, étkezési szabályok
+- preferenciák: helyszín, edzésidő, gyakoriság
+
+A kérdőív adatait a backend a `user_questionnaires` táblába menti.
+
+---
+
+## Dashboard
+
+A felhasználói dashboard egy központi vezérlőpanel, amely több modulból épül fel.
+
+### Fő elemek
+- üdvözlő kártya és személyre szabott ajánlások
+- heti edzés- és étkezéstervezet
+- napi étkezési lista és kalóriaszámítás
+- testsúly- és fejlődési trendek grafikonon
+- edzőterem-keresés térképpel
+- üzenetek kezelése felhasználó és admin között
+- profil szerkesztése és profilkép feltöltése
+
+### Dashboard komponensek
+- `DashboardOverviewSection` – statisztikák és kártyák
+- `WorkoutPlanSection` – edzéstervek és edzés részletek
+- `WorkoutModeSection` – edzésmód választása
+- `ProgressSection` – testsúly és fejlődés követése
+- `ProgressPhotosSection` – fejlődési fotók
+- `MessagesSection` – belső üzenetek
+- `GymMap` – edzőtermek térképes nézete
+
+---
+
+## Edzéstervezés
+
+A felhasználó hetente edzésterveket lát és módosíthat, valamint egyes edzéseket törölhet.
+
+### Fő funkciók
+- új edzés létrehozása és mentése (`/api/workouts`)
+- heti edzésterv megjelenítése (`/api/workouts/:userId/week`)
+- edzések részleteinek szerkesztése és törlése
+- gyakorlatok csoportosítása izomcsoport szerint
+- edzésrészletek és sorozatok kezelése
+
+---
+
+## Táplálkozás és ajánlások
+
+A rendszer napi és heti étkezési ajánlásokat készít a kérdőív adatai alapján.
+
+### Fő funkciók
+- heti étkezési terv lekérdezése (`/api/nutrition/:userId/week`)
+- étkezés rögzítése (`/api/meals`)
+- étkezés törlése (`/api/meals/:mealId`)
+- napi kalóriaszámítás és makróbecslés
+- allergiák és étrendi preferenciák figyelembevétele
+
+---
+
+## Fejlődés- és profilkövetés
+
+### Testsúly és fotók
+- testsúlynapló mentése és megjelenítése
+- fejlődési fotók feltöltése és kezelése
+- edzés/pontos előrehaladás grafikonon
+
+### Profil kezelés
+- profiladatok frissítése (`/api/update-profile`)
+- jelszó módosítása (`/api/change-password`)
+- profilkép feltöltés és mentés (`/api/upload-profile-image`)
+
+---
+
+## Üzenetkezelés és admin kommunikáció
+
+### Felhasználói üzenetek
+- üzenetek lekérése (`/api/messages/:userId`)
+- olvasottként jelölés (`/api/messages/:messageId/mark-read`)
+- új üzenetek küldése (`/api/messages`)
+- üzenetek törlése
+
+### Admin funkciók
+- admin dashboard értékek lekérése (`/api/admin/overview/:userId`)
+- admin üzenetek olvasása és válaszolása
+- admin felhasználókezelés (`/api/admin/users/:targetUserId`)
+- admin üzenet törlés
+- admin válasz küldése felhasználónak
+
+---
+
+## Egyéb fontos elemek
+
+### Demo mód
+- demó felhasználó bejelentkezés és gyors tesztelés
+- lokális tároló használata a demo állapot mentéséhez
+
+### Sötét mód
+- felhasználói beállítás tárolása `localStorage`-ban
+- `dark-mode` osztály a `body` elemhez
+
+### Kapcsolatfelvétel
+- ügyfélszolgálat üzenetküldő űrlap backend hívással
+- a kapcsolatfelvételi üzenetek a `contact_messages` táblába kerülnek
+
+---
+
+## Biztonság
+
+- jelszó hash-elése a backendben `bcrypt` segítségével
+- email alapú jelszóvisszaállítás
+- jogosultság-szétválasztás admin és felhasználó között
+
+:::info
+Ez a dokumentáció a jelenlegi frontend és backend forráskód alapján készült, és lefedi a főbb funkciókat, adatáramlást és API-végpontokat.
+:::
+
+
+---
+
+:::tip
+Az összes funkció közösen egy **integrált, felhasználóbarát** ökoszisztéma megteremtésére törekszik!
+:::

@@ -1,0 +1,94 @@
+---
+sidebar_position: 1
+---
+
+# 🏋️ A PowerPlan Webalkalmazás - Teljes Bevezetés
+
+## Mi is az a PowerPlan?
+
+A **PowerPlan** egy komprehenzív, modern webalapú fitnesz- és életmód-támogató alkalmazás, amelynek célja az edzéstervezés, a táplálkozáskövetés, a fejlődés nyomon követése és a felhasználói kommunikáció egyetlen integrált rendszerben történő megvalósítása. Az alkalmazás egyesíti az összes szükséges funkciót, amely egy komolyan sportolni kívánó személy számára szükséges lehet.
+
+![PowerPlan Logo](/img/logo.png)
+
+### 🎯 Fő Célok
+
+A projekt elsődleges célja egy olyan webalkalmazás létrehozása, amely teljes körűen támogatja a felhasználókat a tudatosabb edzésben és táplálkozásban. A rendszer egyidejűleg segítséget nyújt az alábbi kiemelt területeken:
+
+- **Személyre szabott edzéstervezés** - Minden felhasználó másfajta edzésre szorul
+- **Személyre szabott étrendi ajánlások** - Az étkezés a cél függvénye
+- **Napi és heti haladáskövetés** - Nyomon követheted az előrehaladásodat
+- **Fejlődési fotók és testsúlynapló** - Vizuális dokumentálás
+- **Belső üzenetkezelés** - Felhasználók és adminisztrátorok közötti kommunikáció
+- **Adminisztrátori ellenőrzés és felügyelet** - Platform kezelés
+
+### 🔧 Megoldandó Probléma
+
+Napjainkban sok olyan alkalmazás érhető el, amely külön kezeli az edzéseket, az étkezéseket vagy a fejlődés dokumentálását, azonban ritkábban található olyan megoldás, amely ezeket a funkciókat **egységes rendszerben** egyesíti.
+
+A PowerPlan ezt a hiányt próbálja orvosolni úgy, hogy:
+- A felhasználó által megadott adatokból komplexebb képet alkot
+- Személyre szabott ajánlásokat ad
+- Az ajánlások kapcsolódnak az egyéni célokhoz és preferenciákhoz
+
+### 👥 Célcsoport
+
+A PowerPlan különösen hasznos a következő felhasználók számára:
+
+- **Kezdő sportolók** - Segítség az edzéstervek és étrend kialakításában
+- **Haladó felhasználók** - Strukturált fejlődésköveteés
+- **Életmódváltók** - Egészségesebb életre való átmenet
+- **Adminisztrátorok** - A platform felügyelete
+
+### 💻 Technológiai Stack
+
+A projektet modern webfejlesztési technológiákkal valósítottuk meg:
+
+| Réteg | Technológia | Leírás |
+|-------|-------------|--------|
+| **Frontend** | React + Vite | Gyors, dinamikus felhasználói felület |
+| **Backend** | Node.js + Express | REST API szerver |
+| **Adatbázis** | MySQL | Megbízható adattárolás |
+| **Futtatás** | Docker Compose | Reprodukálható környezet |
+| **Tesztelés** | Jest + Selenium | Automatizált minőségbiztosítás |
+
+---
+
+## 🚀 Gyors Kezdés
+
+### Előfeltételek
+- Docker Desktop telepítve
+- Node.js 18+ (nem szükséges, ha csak Docker-rel futsz)
+
+### Indítás
+
+```bash
+# A gyökérkönyvtárból:
+node indito.js
+
+# Vagy egy batch fájllal (Windows):
+PowerPlan-Start.bat
+```
+
+Az alkalmazás elindul a következő portokon:
+- 🌍 **Frontend**: [http://localhost:5173](http://localhost:5173)
+- ⚙️ **Backend API**: http://localhost:5001
+- 🗄️ **Adatbázis**: [http://localhost:8081](http://localhost:8081) (phpMyAdmin)
+
+---
+
+## 📚 Dokumentáció Tartalma
+
+1. **Rendszerterv és Architektúra** - Hogyan épül fel a rendszer?
+2. **Adatbázis-tervezés** - Mit tároljunk és hogyan?
+3. **Backend Megvalósítás** - Az API működése
+4. **Frontend Megvalósítás** - Az UI komponensek
+5. **Tesztelés és Ellenőrzés** - Minőségbiztosítás
+
+---
+
+## 📖 Készítők
+
+**Pajor Alex** és **Tóth Márton Máté**
+
+*Premontrei Szakgimnázium és Techmikum, Keszthely*  
+*Szoftverfejlesztő és tesztelő szak - 2026*

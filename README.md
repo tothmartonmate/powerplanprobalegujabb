@@ -1,4 +1,4 @@
-﻿# PowerPlan – Vizsgaremek
+﻿﻿# PowerPlan – Vizsgaremek
 
 Szoftverfejlesztő és -tesztelő záróvizsga projekt
 Résztvevők: Tóth Márton Máté és Pajor Alex
@@ -155,9 +155,90 @@ docker compose up --build -d
 
 ### Ellenőrzés
 
-- Frontend: `http://localhost:5173`
-- Backend health: `http://localhost:5001/api/health`
-- phpMyAdmin: `http://localhost:8081`
+- **Frontend**: http://localhost:5173
+- **Backend**: http://localhost:5001
+- **Backend health**: http://localhost:5001/api/health
+- **phpMyAdmin**: http://localhost:8081
+- **Dokumentáció**: http://localhost:3002
+
+### Dokumentáció indítása (Docusaurus)
+
+A PowerPlan dokumentáció egy Docusaurus alapú, statikus weboldal, amely külön indítható.
+
+#### Mit kell tudni:
+- A dokumentáció a `Document/powerplan` mappában helyezkedik el
+- **NPM install szükséges!** Az első indítás előtt futtasd: `npm install`
+- Port: **3002**
+
+#### Windows batch-ből (ajánlott):
+
+```powershell
+PowerPlan-Docs-Start.bat
+```
+
+#### Terminálból manuálisan:
+
+```powershell
+cd Document\powerplan
+npm install
+npm start
+```
+
+Az oldal automatikusan megnyitódik a böngészőben: **http://localhost:3002**
+
+---
+
+### Tesztelés (Backend és Frontend)
+
+A PowerPlan automatizált tesztelési suite-ja Jest és Selenium keretrendszereket használ a kód minőségének biztosítása érdekében.
+
+#### ⚠️ Előfeltételek - NPM Install SZÜKSÉGES!
+
+Az alábbi csomagok telepítése **KÖTELEZŐ** a tesztek futtatása előtt:
+
+```powershell
+# Frontend mappában
+cd Frontend
+npm install
+
+# Backend mappában (új PowerShell ablakban vagy korábbit bezárva)
+cd ..\Backend
+npm install
+```
+
+#### Tesztek futtatása Windows-ban (ajánlott):
+
+```powershell
+PowerPlan-Tests.bat
+```
+
+Ez a script automatikusan az alábbi lépéseket hajtja végre:
+1. ✅ Frontend build futtatása
+2. ✅ Backend Jest egységtesztek futtatása:
+   - `nutritionHelpers.test.js` - táplálkozási logika tesztelése
+   - `workoutHelpers.test.js` - edzés-logika tesztelése
+3. ✅ Frontend Selenium végponttól-végpontig tesztek futtatása (Google Chrome-ban)
+
+#### Tesztek futtatása manuálisan:
+
+```powershell
+# Backend tesztek
+cd Backend
+npm install
+npx jest test/services/nutritionHelpers.test.js test/services/workoutHelpers.test.js --runInBand
+
+# Frontend build
+cd ..\Frontend
+npm install
+npm run build
+```
+
+#### Tesztek elérhetősége
+
+- **Backend tesztek**: `Backend/test/services/`
+- **Frontend tesztek**: `Frontend/selenium_tests/`
+
+---
 
 ### Leállítás
 
@@ -169,7 +250,7 @@ docker compose down
 
 Ha Docker nélkül szeretnéd futtatni:
 
-- Backend: `cd Backend && npm install && npm run dev`
-- Frontend: `cd Frontend && npm install && npm run dev`
+- **Backend**: `cd Backend && npm install && npm run dev`
+- **Frontend**: `cd Frontend && npm install && npm run dev`
 
 Ez a README a projekt céljait, fő funkcióit, technológiai felépítését és a futtatási környezetet foglalja össze.
